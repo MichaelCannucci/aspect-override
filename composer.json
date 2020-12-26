@@ -1,0 +1,23 @@
+{
+    "name": "michaelcannucci/aspect-override",
+    "description": "Override functions through aspects",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Michael Cannucci",
+            "email": "michaelcannucci@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "AspectOverride\\": "src/",
+            "Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "nikic/php-parser": "^4.10",
+        "phpunit/phpunit": "^9.5"
+    }
+}
