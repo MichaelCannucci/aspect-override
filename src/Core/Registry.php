@@ -5,9 +5,9 @@ namespace AspectOverride\Core;
 class Registry
 {
   /** @var array<string,array<string,callable> */
-  protected $classMap = [];
+  protected static $classMap = [];
   /** @var array<string,callable> */
-  protected $fnMap = [];
+  protected static $fnMap = [];
 
   /** @param class-string $class */
   public static function setForClass(string $class, string $method, callable $fn): void

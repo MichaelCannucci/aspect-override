@@ -1,18 +1,20 @@
 <?php
 
-namespace AspectOverride\Core;
+namespace AspectOverride;
+
+use AspectOverride\Core\Registry;
 
 class Override 
 {
    /**
    * @param class-string $class
    */
-   public function method(string $class, callable $override): void
+   public static function method(string $class, string $method, callable $override): void
    {
-
+      Registry::setForClass($class, $method, $override);
    }
-   public function function(string $fn, callable $override): void
+   public static function function(string $fn, callable $override): void
    {
-
+      Registry::setForFunction($fn, $override);
    }
 }
