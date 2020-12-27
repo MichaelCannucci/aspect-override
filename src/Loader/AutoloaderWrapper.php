@@ -3,8 +3,9 @@
 namespace AspectOverride\Loader;
 
 use AspectOverride\Core\Core;
+use AspectOverride\Core\Observer;
 use AspectOverride\Mocking\ClassMocker;
-use AspectOverride\Mocking\MockCreatorInterface;
+use AspectOverride\Mocking\FunctionMocker;
 use Composer\Autoload\ClassLoader;
 
 final class AutoloaderWrapper
@@ -13,12 +14,10 @@ final class AutoloaderWrapper
   protected $composerLoader;
   /** @var string[] */
   protected $configuredDirectories;
-  /** @var MockCreatorInterface */
+  /** @var ClassMocker */
   protected $classMocker;
 
-  public function __construct(
-    MockCreatorInterface $classMocker = null
-  ) 
+  public function __construct(ClassMocker $classMocker = null) 
   {
     $this->configuredDirectories = Core::getInstance()->getDirectories() ?? [];
     $this->classMocker = $classMocker ?? new ClassMocker();
@@ -26,22 +25,25 @@ final class AutoloaderWrapper
   public function setAutoloader(ClassLoader $classLoader): self
   {
     $this->composerLoader = $classLoader;
+    $this->composerLoader->loadClass(Observer::class);
+    $this->composerLoader->loadClass(FunctionMocker::class);
     return $this;
   }
-  public function loadClass($class)
+  /** @return bool|null */
+  public function loadClass(string $class)
   {
-    $path = $this->composerLoader->findFile($class);
+    $path = realpath($this->composerLoader->findFile($class) ?: '');
     if(!$path) {
       return false;
     }
-    $path = realpath($path);
+    Observer::dispatch(Observer::CLASS_LOADED, $class);
     if($this->isInConfiguredDirectories($path)) {
       $this->classMocker->loadMocked($path);
       return true;
     }
     return $this->composerLoader->loadClass($class);
   }
-  protected function isInConfiguredDirectories($path)
+  protected function isInConfiguredDirectories(string $path): bool
   {
     foreach($this->configuredDirectories as $directory) {
       if(false !== strpos($path, $directory)) {

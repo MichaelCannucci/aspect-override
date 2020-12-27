@@ -2,9 +2,11 @@
 
 namespace AspectOverride\Core;
 
+use AspectOverride\Util\ClassUtils;
+
 class Registry
 {
-  /** @var array<string,array<string,callable> */
+  /** @var array<string,array<string,callable>> */
   protected static $classMap = [];
   /** @var array<string,callable> */
   protected static $fnMap = [];
@@ -12,12 +14,12 @@ class Registry
   /** @param class-string $class */
   public static function setForClass(string $class, string $method, callable $fn): void
   {
-    self::$classMap[self::escapeClass($class)][$method] = $fn;
+    self::$classMap[ClassUtils::escapeFQN($class)][$method] = $fn;
   }
   /** @param class-string $class */
   public static function getForClass(string $class, string $method): ?callable
   {
-    return self::$classMap[self::escapeClass($class)][$method] ?? null;
+    return self::$classMap[ClassUtils::escapeFQN($class)][$method] ?? null;
   }
   public static function setForFunction(string $fnName, callable $fn): void
   {
@@ -26,9 +28,5 @@ class Registry
   public static function getForFunction(string $fn): ?callable
   {
     return self::$fnMap[$fn] ?? null;
-  }
-  protected static function escapeClass(string $classString)
-  {
-    return str_replace('//', '/', $classString);
   }
 }

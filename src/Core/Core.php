@@ -17,7 +17,7 @@ class Core
   protected $temporaryFilesDir = '/tmp/aspect_override';
   /** @var bool */
   protected $useCache = false;
-  /** @var self */
+  /** @var ?self */
   protected static $instance;
 
   protected function __construct() { }
@@ -28,12 +28,8 @@ class Core
     }
     return self::$instance;
   }
-  /** @param array{
-   * directories: string[],
-   * ?temporaryFilesDir: string,
-   * ?useCache: bool
-   * } $options */
-  public function init(array $options)
+  /** @param array{directories:string[],temporaryFilesDir:string,useCache:bool} $options */
+  public function init(array $options): void
   {
     if($this->hasBeenInitialized) {
       return;
@@ -54,20 +50,24 @@ class Core
     AutoloaderHijacker::hijack(ClassLoader::class, new AutoloaderWrapper());
     $this->hasBeenInitialized = true;
   }
-  public function getTemporaryDirectory()
+  public function getTemporaryDirectory(): string
   {
     return $this->temporaryFilesDir;
   }
-  public function getDirectories()
+  /** @return string[] */
+  public function getDirectories(): array
   {
     return $this->directories;
   }
-  public function shouldUseCache()
+  public function shouldUseCache(): bool
   {
     return $this->useCache;
   }
-  /** @param string[] $directories */
-  protected function normalizeDirectories(array $directories)
+  /** 
+  * @param string[] $directories 
+  * @return string[]
+  */
+  protected function normalizeDirectories(array $directories): array
   {
     return array_filter(array_map(
       function (string $directory) {

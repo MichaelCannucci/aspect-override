@@ -18,6 +18,7 @@
     },
     "require-dev": {
         "nikic/php-parser": "^4.10",
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^9.5",
+        "phpstan/phpstan": "^0.12.64"
     }
 }

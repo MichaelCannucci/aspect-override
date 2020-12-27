@@ -12,13 +12,13 @@ use PhpParser\Parser;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter\Standard as Dumper;
 
-class ClassMocker implements  MockCreatorInterface
+class ClassMocker
 {
   /** @var Hasher */
   protected $hasher;
   /** @var Parser */
   protected $parser;
-  /** @var Traverser */
+  /** @var NodeTraverser */
   protected $traverser;
   /** @var Dumper */
   protected $dumper;
@@ -38,12 +38,18 @@ class ClassMocker implements  MockCreatorInterface
   public function loadMocked(string $filePath): void
   {
     $code = file_get_contents($filePath);
+    if(!$code) {
+      throw new \RuntimeException("File unaccessible: {$filePath}");
+    }
     $path = $this->getCachedPath($filePath, $code);
     if(Core::getInstance()->shouldUseCache() && file_exists($path)) {
       $this->includeFile($path);
       return;
     }
     $ast = $this->parser->parse($code);
+    if(!$ast) {
+      throw new \RuntimeException("Unable to parse file: {$filePath}");
+    }
     $ast = $this->traverser->traverse($ast);
     file_put_contents($path, '<?php' . PHP_EOL . $this->dumper->prettyPrint($ast));
     $this->includeFile($path);
@@ -55,7 +61,7 @@ class ClassMocker implements  MockCreatorInterface
     $tmpDir = Core::getInstance()->getTemporaryDirectory();
     return $tmpDir . $hash;
   }
-  protected function includeFile($path)
+  protected function includeFile(string $path): void
   {
     include $path;
   }

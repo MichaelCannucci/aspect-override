@@ -4,9 +4,10 @@ namespace Tests\Unit;
 
 use AspectOverride\Override;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
+use Tests\Util\TestClasses\OverloadedFunction;
 use Tests\Util\TestClasses\MultipleMethods;
 use Tests\Util\TestClasses\OneMethod;
+use ReflectionClass;
 
 class MockerTest extends TestCase
 {
@@ -33,5 +34,13 @@ class MockerTest extends TestCase
       });
       $this->assertTrue($class->$method());
     }
+  }
+  public function test_can_override_global_functions()
+  {
+    Override::function('time', function(){
+      return 10;
+    });
+    $class = new OverloadedFunction();
+    $this->assertEquals(10, $class->time());
   }
 }

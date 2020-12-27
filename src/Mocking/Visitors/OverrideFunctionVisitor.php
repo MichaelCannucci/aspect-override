@@ -2,6 +2,7 @@
 
 namespace AspectOverride\Mocking\Visitors;
 
+use AspectOverride\Util\ClassUtils;
 use PhpParser\BuilderFactory;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Assign;
@@ -25,8 +26,9 @@ class OverrideFunctionVisitor extends NodeVisitorAbstract
     } elseif ($node instanceof Class_) {
       $this->namespacedClassName = $node->namespacedName;
     }
+    return $node;
   }
-  protected function handleFunction(ClassMethod $node)
+  protected function handleFunction(ClassMethod $node): void
   {
     if (!$this->namespacedClassName) {
       throw new RuntimeException("Expecting the function to be apart of a class: {$node->name}:{$node->getStartLine()}");
@@ -35,8 +37,8 @@ class OverrideFunctionVisitor extends NodeVisitorAbstract
     $stmt = new If_(
       new Assign(
         $builder->var('__fn__'),
-        $builder->funcCall($this->escape('\AspectOverride\Core\Registry::getForClass'), [
-          $this->escape($this->namespacedClassName), (string)$node->name
+        $builder->funcCall(ClassUtils::escapeFQN('\AspectOverride\Core\Registry::getForClass'), [
+          ClassUtils::escapeFQN($this->namespacedClassName), (string)$node->name
         ])
       ),
       [
@@ -52,10 +54,7 @@ class OverrideFunctionVisitor extends NodeVisitorAbstract
         ]
       ]
     );
+    /** @phpstan-ignore-next-line */
     array_unshift($node->stmts, $stmt);
-  }
-  protected function escape($string)
-  {
-    return str_replace('/', '//', $string);
   }
 }
