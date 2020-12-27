@@ -29,4 +29,9 @@ class Registry
   {
     return self::$fnMap[$fn] ?? null;
   }
+  public static function clean(): void
+  {
+    self::$classMap = [];
+    self::$fnMap = [];
+  }
 }

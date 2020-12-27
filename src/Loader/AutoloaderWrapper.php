@@ -3,7 +3,6 @@
 namespace AspectOverride\Loader;
 
 use AspectOverride\Core\Core;
-use AspectOverride\Core\Observer;
 use AspectOverride\Mocking\ClassMocker;
 use AspectOverride\Mocking\FunctionMocker;
 use Composer\Autoload\ClassLoader;
@@ -25,7 +24,7 @@ final class AutoloaderWrapper
   public function setAutoloader(ClassLoader $classLoader): self
   {
     $this->composerLoader = $classLoader;
-    $this->composerLoader->loadClass(Observer::class);
+    // Make sure this class is loaded
     $this->composerLoader->loadClass(FunctionMocker::class);
     return $this;
   }
@@ -36,7 +35,7 @@ final class AutoloaderWrapper
     if(!$path) {
       return false;
     }
-    Observer::dispatch(Observer::CLASS_LOADED, $class);
+    FunctionMocker::loadFunctions($class);
     if($this->isInConfiguredDirectories($path)) {
       $this->classMocker->loadMocked($path);
       return true;

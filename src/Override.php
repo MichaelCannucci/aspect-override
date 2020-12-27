@@ -5,7 +5,7 @@ namespace AspectOverride;
 use AspectOverride\Core\Observer;
 use AspectOverride\Core\Registry;
 use AspectOverride\Mocking\FunctionMocker;
-use AspectOverride\Util\ClassUtils;
+use AspectOverride\Mocking\ScopedTracker;
 
 class Override 
 {
@@ -16,11 +16,14 @@ class Override
    {
       Registry::setForClass($class, $method, $override);
    }
-   public static function function(string $fn, callable $override): void
+   public static function function(string $fn, callable $override): ScopedTracker
    {
       Registry::setForFunction($fn, $override);
-      Observer::subscribe(Observer::CLASS_LOADED, $fn, function(string $class) use ($fn) {
-         FunctionMocker::loadMocked($class, $fn);
-      });
+      FunctionMocker::subscribeToLoading($fn);
+      return new ScopedTracker($fn);
+   }
+   public static function clean(): void
+   {
+      Registry::clean();
    }
 }
