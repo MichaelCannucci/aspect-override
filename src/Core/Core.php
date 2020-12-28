@@ -14,7 +14,7 @@ class Core
   /** @var bool */
   protected $hasBeenInitialized = false;
   /** @var string */
-  protected $temporaryFilesDir = '/tmp/aspect_override';
+  protected $temporaryFilesDir = '/tmp/';
   /** @var bool */
   protected $useCache = false;
   /** @var ?self */
