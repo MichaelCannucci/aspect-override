@@ -19,6 +19,12 @@
     "require-dev": {
         "nikic/php-parser": "^4.10",
         "phpunit/phpunit": "^9.5",
-        "phpstan/phpstan": "^0.12.64"
+        "phpstan/phpstan": "^0.12.64",
+        "rawr/cross-data-providers": "^2.3"
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "check": "vendor/bin/phpstan -l8 analyse src/",
+        "coverage": "vendor/bin/phpunit --coverage-html html"
     }
 }

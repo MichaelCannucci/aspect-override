@@ -2,22 +2,17 @@
 
 namespace AspectOverride\Util;
 
+use AspectOverride\Exceptions\MalformedNamespacedItem;
+
 class ClassUtils
 {
-  public static function unescapeFQN(string $classString): string
-  {
-    return str_replace('//', '/', $classString);
-  }
-  public static function escapeFQN(string $classString): string
-  {
-    return str_replace('/', '//', $classString);
-  }
   public static function getNamespace(string $classString): string
   {
-    return 
+    // Remove the last segment on the FQN (ex: MyTest\A\B\ActualClassName -> MyTest\A\B)
+    return
     implode('\\',
       array_slice(
-        explode('\\',self::unescapeFQN($classString)),
+        explode('\\', str_replace('\\\\', '\\', $classString)),
         0,
         -1
       )

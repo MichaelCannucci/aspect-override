@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use AspectOverride\Core\Registry;
 use AspectOverride\Override;
 use PHPUnit\Framework\TestCase;
 use Tests\Util\TestClasses\OverloadedFunction;
@@ -42,5 +43,14 @@ class MockerTest extends TestCase
     });
     $class = new OverloadedFunction();
     $this->assertEquals(10, $class->time());
+  }
+  public function test_function_override_gets_unremoved()
+  {
+    Override::clean();
+    $clear = Override::function('time', function(){
+      return 10;
+    });
+    $clear();
+    $this->assertNull(Registry::getForFunction('time'));
   }
 }

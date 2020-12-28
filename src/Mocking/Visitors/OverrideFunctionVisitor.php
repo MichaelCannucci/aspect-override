@@ -37,8 +37,8 @@ class OverrideFunctionVisitor extends NodeVisitorAbstract
     $stmt = new If_(
       new Assign(
         $builder->var('__fn__'),
-        $builder->funcCall(ClassUtils::escapeFQN('\AspectOverride\Core\Registry::getForClass'), [
-          ClassUtils::escapeFQN($this->namespacedClassName), (string)$node->name
+        $builder->funcCall($this->escape('\AspectOverride\Core\Registry::getForClass'), [
+          $this->escape($this->namespacedClassName), (string)$node->name
         ])
       ),
       [
@@ -56,5 +56,9 @@ class OverrideFunctionVisitor extends NodeVisitorAbstract
     );
     /** @phpstan-ignore-next-line */
     array_unshift($node->stmts, $stmt);
+  }
+  protected function escape(string $class): string
+  {
+    return str_replace("/", "//", $class);
   }
 }

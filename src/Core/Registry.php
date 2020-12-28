@@ -14,12 +14,16 @@ class Registry
   /** @param class-string $class */
   public static function setForClass(string $class, string $method, callable $fn): void
   {
-    self::$classMap[ClassUtils::escapeFQN($class)][$method] = $fn;
+    self::$classMap[$class][$method] = $fn;
   }
   /** @param class-string $class */
   public static function getForClass(string $class, string $method): ?callable
   {
-    return self::$classMap[ClassUtils::escapeFQN($class)][$method] ?? null;
+    return self::$classMap[$class][$method] ?? null;
+  }
+  public static function removeForClass(string $class, string $method): void
+  {
+    unset(self::$classMap[$class][$method]);
   }
   public static function setForFunction(string $fnName, callable $fn): void
   {
@@ -28,6 +32,15 @@ class Registry
   public static function getForFunction(string $fn): ?callable
   {
     return self::$fnMap[$fn] ?? null;
+  }
+  /** @return string[] */
+  public static function getFunctions(): array
+  {
+    return array_keys(self::$fnMap);
+  }
+  public static function removeForFunction(string $fn): void
+  {
+    unset(self::$fnMap[$fn]);
   }
   public static function clean(): void
   {

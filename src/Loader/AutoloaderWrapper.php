@@ -3,8 +3,10 @@
 namespace AspectOverride\Loader;
 
 use AspectOverride\Core\Core;
+use AspectOverride\Core\Registry;
 use AspectOverride\Mocking\ClassMocker;
 use AspectOverride\Mocking\FunctionMocker;
+use AspectOverride\Util\ClassUtils;
 use Composer\Autoload\ClassLoader;
 
 final class AutoloaderWrapper
@@ -24,8 +26,10 @@ final class AutoloaderWrapper
   public function setAutoloader(ClassLoader $classLoader): self
   {
     $this->composerLoader = $classLoader;
-    // Make sure this class is loaded
+    // Make sure these classes are loaded
     $this->composerLoader->loadClass(FunctionMocker::class);
+    $this->composerLoader->loadClass(ClassUtils::class);
+    $this->composerLoader->loadClass(Registry::class);
     return $this;
   }
   /** @return bool|null */
