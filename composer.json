@@ -1,5 +1,5 @@
 {
-    "name": "michaelcannucci/aspect-override",
+    "name": "mcannucci/aspect-override",
     "description": "Override functions through aspects",
     "type": "library",
     "license": "MIT",
