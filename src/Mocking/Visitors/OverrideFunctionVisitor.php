@@ -6,7 +6,6 @@ use PhpParser\BuilderFactory;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Identifier;
-use PhpParser\Node\Name;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
@@ -31,7 +30,7 @@ class OverrideFunctionVisitor extends NodeVisitorAbstract
   }
   protected function handleFunction(ClassMethod $node): void
   {
-    if (!$this->namespacedClassName) {
+    if (!$this->namespacedClassName || !$node->stmts) {
       return;
     }
     $builder = new BuilderFactory();
