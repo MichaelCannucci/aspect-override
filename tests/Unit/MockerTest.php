@@ -2,13 +2,14 @@
 
 namespace Tests\Unit;
 
+use ReflectionClass;
 use AspectOverride\Core\Registry;
 use AspectOverride\Override;
 use PHPUnit\Framework\TestCase;
 use Tests\Util\TestClasses\OverloadedFunction;
 use Tests\Util\TestClasses\MultipleMethods;
 use Tests\Util\TestClasses\OneMethod;
-use ReflectionClass;
+use Tests\Util\TestClasses\TestClass;
 
 class MockerTest extends TestCase
 {
@@ -52,5 +53,14 @@ class MockerTest extends TestCase
     });
     $clear();
     $this->assertNull(Registry::getForFunction('time'));
+  }
+  public function test_function_has_void_return()
+  {
+    Override::method(TestClass::class, 'voidReturn', function(){
+      // Anything so the method doesn't throw
+      $a = 1;
+    });
+    $class = new TestClass();
+    $this->assertNull($class->voidReturn());
   }
 }

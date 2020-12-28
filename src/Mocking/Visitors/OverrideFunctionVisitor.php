@@ -2,17 +2,18 @@
 
 namespace AspectOverride\Mocking\Visitors;
 
-use AspectOverride\Util\ClassUtils;
 use PhpParser\BuilderFactory;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Assign;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\Name;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\NodeVisitorAbstract;
-use RuntimeException;
 
 class OverrideFunctionVisitor extends NodeVisitorAbstract
 {
@@ -31,9 +32,29 @@ class OverrideFunctionVisitor extends NodeVisitorAbstract
   protected function handleFunction(ClassMethod $node): void
   {
     if (!$this->namespacedClassName) {
-      throw new RuntimeException("Expecting the function to be apart of a class: {$node->name}:{$node->getStartLine()}");
+      return;
     }
     $builder = new BuilderFactory();
+    $mockedFunctionCall = $builder->funcCall(
+      $builder->var('__fn__'),
+      array_map(function (Param $param) {
+        return $param->var;
+      }, $node->params)
+    );
+    if($this->shouldReturn($node)){
+      $ifBody = [
+        'stmts' => [
+          new Return_($mockedFunctionCall)
+        ]
+      ];
+    } else {
+      $ifBody = [
+        'stmts' => [
+          new Expression($mockedFunctionCall),
+          new Return_()
+        ]
+      ];
+    }
     $stmt = new If_(
       new Assign(
         $builder->var('__fn__'),
@@ -41,21 +62,18 @@ class OverrideFunctionVisitor extends NodeVisitorAbstract
           $this->escape($this->namespacedClassName), (string)$node->name
         ])
       ),
-      [
-        'stmts' => [
-          new Return_(
-            $builder->funcCall(
-              $builder->var('__fn__'),
-              array_map(function (Param $param) {
-                return $param->var;
-              }, $node->params)
-            )
-          )
-        ]
-      ]
+      $ifBody
     );
     /** @phpstan-ignore-next-line */
     array_unshift($node->stmts, $stmt);
+  }
+  protected function shouldReturn(ClassMethod $node)
+  {
+    $returnType = $node->returnType;
+    if ($returnType instanceof Identifier) {
+      return $returnType->name !== 'void';
+    }
+    return true;
   }
   protected function escape(string $class): string
   {
