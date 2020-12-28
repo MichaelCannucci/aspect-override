@@ -16,7 +16,7 @@ class FunctionMocker
         if(!function_exists('$namespace\\$function')) {
           function {$function}() {
             if(\$__fn__ = \AspectOverride\Core\Registry::getForFunction('$function')) {
-              return \$__fn__(func_get_args());
+              return \$__fn__(...func_get_args());
             }
           }
         }
