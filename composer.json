@@ -16,8 +16,10 @@
             "Tests\\": "tests/"
         }
     },
+    "require": {
+        "nikic/php-parser": "^4.10"
+    },
     "require-dev": {
-        "nikic/php-parser": "^4.10",
         "phpunit/phpunit": "^9.5",
         "phpstan/phpstan": "^0.12.64",
         "rawr/cross-data-providers": "^2.3"
