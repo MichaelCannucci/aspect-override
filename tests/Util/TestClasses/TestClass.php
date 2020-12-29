@@ -14,4 +14,20 @@ class TestClass
   {
     throw new \RuntimeException("Should not run!");
   }
+  private function privateMethod()
+  {
+    throw new \RuntimeException("Should not run!");
+  }
+  protected function protectedMethod()
+  {
+    throw new \RuntimeException("Should not run!");
+  }
+  public function fromPrivateMethod()
+  {
+    return $this->privateMethod();
+  }
+  public function fromProtectedMethod()
+  {
+    return $this->protectedMethod();
+  }
 }

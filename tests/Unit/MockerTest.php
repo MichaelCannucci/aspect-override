@@ -63,4 +63,20 @@ class MockerTest extends TestCase
     $class = new TestClass();
     $this->assertNull($class->voidReturn());
   }
+  public function test_private_function()
+  {
+    Override::method(TestClass::class, 'privateMethod', function(){
+      return null;
+    });
+    $class = new TestClass();
+    $this->assertNull($class->fromPrivateMethod());
+  }
+  public function test_protected_function()
+  {
+    Override::method(TestClass::class, 'protectedMethod', function(){
+      return null;
+    });
+    $class = new TestClass();
+    $this->assertNull($class->fromProtectedMethod());
+  }
 }
