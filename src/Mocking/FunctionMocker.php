@@ -11,17 +11,16 @@ class FunctionMocker
   {
     foreach(Registry::getFunctions() as $function) {
       $namespace = ClassUtils::getNamespace($class);
-      $code = <<<EOL
+      $code = "
       namespace {$namespace} {
-        if(!function_exists('$namespace\\$function')) {
+        if(!function_exists('\\$namespace\\$function')) {
           function {$function}() {
             if(\$__fn__ = \AspectOverride\Core\Registry::getForFunction('$function')) {
               return \$__fn__(...func_get_args());
             }
           }
         }
-      }
-      EOL;
+      }";
       eval($code);
     }
   }
