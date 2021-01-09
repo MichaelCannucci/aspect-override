@@ -63,10 +63,9 @@ class OverrideFunctionVisitor extends NodeVisitorAbstract
       ),
       $ifBody
     );
-    /** @phpstan-ignore-next-line */
     array_unshift($node->stmts, $stmt);
   }
-  protected function shouldReturn(ClassMethod $node)
+  protected function shouldReturn(ClassMethod $node): bool
   {
     $returnType = $node->returnType;
     if ($returnType instanceof Identifier) {
