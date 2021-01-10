@@ -2,7 +2,7 @@
 
 namespace AspectOverride\Loader;
 
-use AspectOverride\Core\Core;
+use AspectOverride\Core\Instance;
 use AspectOverride\Core\Registry;
 use AspectOverride\Mocking\ClassMocker;
 use AspectOverride\Mocking\FunctionMocker;
@@ -20,8 +20,12 @@ final class AutoloaderWrapper
 
   public function __construct(ClassMocker $classMocker = null) 
   {
-    $this->configuredDirectories = Core::getInstance()->getDirectories() ?? [];
+    $this->configuredDirectories = Instance::getInstance()->getDirectories() ?? [];
     $this->classMocker = $classMocker ?? new ClassMocker();
+  }
+  public function __invoke(string $class)
+  {
+    return $this->loadClass($class);
   }
   public function setAutoloader(ClassLoader $classLoader): self
   {

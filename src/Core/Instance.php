@@ -8,10 +8,14 @@ use AspectOverride\Util\Configuration;
 use Composer\Autoload\ClassLoader;
 use RuntimeException;
 
-class Core
+class Instance
 {
   /** @var Configuration */
   protected $config;
+  /** @var string[] */
+  protected $autoloaders = [ClassLoader::class];
+  /** @var string[] */
+  protected $autoloaderFiles = [];
   /** @var ?self */
   protected static $instance;
 
@@ -33,7 +37,22 @@ class Core
   public function init(array $options): void
   {
     $this->config = new Configuration(...$options);
-    AutoloaderHijacker::hijack(ClassLoader::class, new AutoloaderWrapper());
+    foreach($this->autoloaders as $loader) {
+      AutoloaderHijacker::hijack($loader, new AutoloaderWrapper());
+    }
+    foreach($this->autoloaderFiles as $file) {
+      AutoloaderHijacker::hijack($file, new AutoloaderWrapper());
+    }
+  }
+  public function hijackAutoloader(string $class): self
+  {
+    $this->autoloaders[] = $class;
+    return $this;
+  }
+  public function hijackAutoloaderMethod(string $file): self
+  {
+    $this->autoloaderFiles[] = $file;
+    return $this;
   }
   public function getTemporaryDirectory(): string
   {

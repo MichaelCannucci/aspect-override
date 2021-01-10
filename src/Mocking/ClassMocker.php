@@ -2,7 +2,7 @@
 
 namespace AspectOverride\Mocking;
 
-use AspectOverride\Core\Core;
+use AspectOverride\Core\Instance;
 use AspectOverride\Core\Hasher;
 use AspectOverride\Mocking\Visitors\OverrideFunctionVisitor;
 use PhpParser\NodeTraverser;
@@ -42,7 +42,7 @@ class ClassMocker
       throw new \RuntimeException("File unaccessible: {$filePath}");
     }
     $path = $this->getCachedPath($filePath, $code);
-    if(Core::getInstance()->shouldUseCache() && file_exists($path)) {
+    if(Instance::getInstance()->shouldUseCache() && file_exists($path)) {
       $this->includeFile($path);
       return;
     }
@@ -58,7 +58,7 @@ class ClassMocker
   {
     $name = basename($originalFilePath);
     $hash = $this->hasher->getHash($code, $name);
-    $tmpDir = Core::getInstance()->getTemporaryDirectory();
+    $tmpDir = Instance::getInstance()->getTemporaryDirectory();
     return $tmpDir . $hash;
   }
   protected function includeFile(string $path): void
