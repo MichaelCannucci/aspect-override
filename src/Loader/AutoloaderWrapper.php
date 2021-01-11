@@ -17,14 +17,11 @@ class AutoloaderWrapper
   protected $autoloaderFunctionFindFile;
   /** @var callable|null */
   protected $autoloaderFunction;
-  /** @var string[] */
-  protected $configuredDirectories;
   /** @var ClassMocker */
   protected $classMocker;
 
   public function __construct(ClassMocker $classMocker = null) 
   {
-    $this->configuredDirectories = Instance::getInstance()->getDirectories() ?? [];
     $this->classMocker = $classMocker ?? new ClassMocker();
     /// Make sure these static class are loaded before we modify the composer autoloader
     class_exists(FunctionMocker::class);
@@ -46,17 +43,17 @@ class AutoloaderWrapper
     $this->composerLoader = $classLoader;
     return $this;
   }
-  protected function getPath(string $class): string
+  protected function getPath(string $class): ?string
   {
     if ($this->autoloaderFunctionFindFile) {
-      return ($this->autoloaderFunctionFindFile)($class) ?: '';
+      return ($this->autoloaderFunctionFindFile)($class) ?: null;
     }
-    return $this->composerLoader->findFile($class) ?: '';
+    return $this->composerLoader->findFile($class) ?: null;
   }
   protected function loadOriginal(string $class): ?bool
   {
     if ($this->autoloaderFunction) {
-      return ($this->autoloaderFunction)($class);
+      return ($this->autoloaderFunction)($class) ?: null;
     }
     return $this->composerLoader->loadClass($class);
   }
@@ -75,7 +72,8 @@ class AutoloaderWrapper
   }
   protected function isInConfiguredDirectories(string $path): bool
   {
-    foreach($this->configuredDirectories as $directory) {
+    $path = realpath($path) ?: '';
+    foreach(Instance::getInstance()->getDirectories() as $directory) {
       if(false !== strpos($path, $directory)) {
         return true;
       }
