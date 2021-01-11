@@ -3,6 +3,8 @@
 namespace AspectOverride\Loader;
 
 use AspectOverride\Loader\AutoloaderWrapper;
+use Exception;
+use ReflectionFunction;
 
 class AutoloaderHijacker
 {
@@ -21,5 +23,28 @@ class AutoloaderHijacker
       }
     }
     throw new \RuntimeException("Composer's Autoloader was never registered!");
+  }
+  public static function hijackMethod(string $file, callable $fileResolver, AutoloaderWrapper $wrapper): void
+  {
+    $autoloaders = spl_autoload_functions();
+    foreach($autoloaders as $registeredAutoLoader)
+    {
+      if(!is_array($registeredAutoLoader) 
+          && is_callable($registeredAutoLoader)
+      ) {
+        if(!($registeredAutoLoader instanceof \Closure)) {
+          $registeredAutoLoader = \Closure::fromCallable($registeredAutoLoader);
+        }
+        $method = new ReflectionFunction($registeredAutoLoader);
+        if ($method->getFileName() === realpath($file)) {
+          $wrapper->setAutoloaderFunction($fileResolver, $registeredAutoLoader);
+          spl_autoload_unregister($registeredAutoLoader);
+          /** @phpstan-ignore-next-line $wrapper has __invoke so it acts like a callable*/
+          spl_autoload_register($wrapper);
+          return;
+        }
+      }
+    }
+    throw new Exception("Can not find autoloader for $file");
   }
 }

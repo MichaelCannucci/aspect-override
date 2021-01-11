@@ -12,9 +12,7 @@ class Instance
 {
   /** @var Configuration */
   protected $config;
-  /** @var string[] */
-  protected $autoloaders = [ClassLoader::class];
-  /** @var string[] */
+  /** @var array<string,callable> */
   protected $autoloaderFiles = [];
   /** @var ?self */
   protected static $instance;
@@ -37,21 +35,19 @@ class Instance
   public function init(array $options): void
   {
     $this->config = new Configuration(...$options);
-    foreach($this->autoloaders as $loader) {
-      AutoloaderHijacker::hijack($loader, new AutoloaderWrapper());
-    }
-    foreach($this->autoloaderFiles as $file) {
-      AutoloaderHijacker::hijack($file, new AutoloaderWrapper());
+    AutoloaderHijacker::hijack(ClassLoader::class, new AutoloaderWrapper());
+    foreach($this->autoloaderFiles as $file => $fileResolver) {
+      AutoloaderHijacker::hijackMethod($file, $fileResolver, new AutoloaderWrapper());
     }
   }
-  public function hijackAutoloader(string $class): self
+  /**
+   * @param string $file function's file location
+   * @param callable $fileResolver find files for original function
+   * @return self
+   */
+  public function hijackAutoloaderMethod(string $file, callable $fileResolver): self
   {
-    $this->autoloaders[] = $class;
-    return $this;
-  }
-  public function hijackAutoloaderMethod(string $file): self
-  {
-    $this->autoloaderFiles[] = $file;
+    $this->autoloaderFiles[$file] = $fileResolver;
     return $this;
   }
   public function getTemporaryDirectory(): string
