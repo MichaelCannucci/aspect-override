@@ -41,13 +41,8 @@ class ClassMocker
     if(!$code) {
       throw new \RuntimeException("File unaccessible: {$filePath}");
     }
-    $path = Instance::getInstance()->getTemporaryDirectory() . ltrim($filePath, '/');
-    $path = $this->resolveDir($path);
-    $cachedMarker = $path . '-' . $this->hasher->getHash($code);
-    if(Instance::getInstance()->shouldUseCache() 
-        && file_exists($path)
-         && file_exists($cachedMarker)
-    ) {
+    $path = $this->getCachedPath($filePath, $code);
+    if(Instance::getInstance()->shouldUseCache() && file_exists($path)) {
       $this->includeFile($path);
       return;
     }
@@ -56,36 +51,18 @@ class ClassMocker
       throw new \RuntimeException("Unable to parse file: {$filePath}");
     }
     $ast = $this->traverser->traverse($ast);
-    // Save the file then include it
-    $dir = $this->resolveDir(pathinfo($path, PATHINFO_DIRNAME));
-    if (!is_dir($dir)) {
-      mkdir($dir, 0666, true);
-    }
     file_put_contents($path, '<?php' . PHP_EOL . $this->dumper->prettyPrint($ast));
-    // use another file with a hash for checking if a cache file is up to date
-    if(Instance::getInstance()->shouldUseCache()) {
-      file_put_contents($cachedMarker, '');
-    }
     $this->includeFile($path);
+  }
+  protected function getCachedPath(string $originalFilePath, string $code): string
+  {
+    $name = basename($originalFilePath);
+    $hash = $this->hasher->getHash($code, $name);
+    $tmpDir = Instance::getInstance()->getTemporaryDirectory();
+    return $tmpDir . $hash;
   }
   protected function includeFile(string $path): void
   {
-    // Avoid polluting the scope
     include $path;
-  }
-  function resolveDir($filename)
-  {
-    $filename = str_replace('//', '/', $filename);
-    $parts = explode('/', $filename);
-    $out = array();
-    foreach ($parts as $part){
-        if ($part == '.') continue;
-        if ($part == '..') {
-            array_pop($out);
-            continue;
-        }
-        $out[] = $part;
-    }
-    return implode('/', $out);
   }
 }
