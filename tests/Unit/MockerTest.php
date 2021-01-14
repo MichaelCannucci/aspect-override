@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use AspectOverride\Core\Instance;
 use ReflectionClass;
 use AspectOverride\Core\Registry;
 use AspectOverride\Override;
@@ -17,7 +18,10 @@ class MockerTest extends TestCase
   {
     $example = new OneMethod();
     $reflection = new ReflectionClass($example);
-    $this->assertNotEquals('OneMethod.php', basename($reflection->getFileName()));
+    $this->assertStringContainsString(
+      Instance::getInstance()->getTemporaryDirectory(),
+      $reflection->getFileName()
+    );
   }
   public function test_can_override_class_method()
   {
