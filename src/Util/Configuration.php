@@ -53,6 +53,6 @@ class Configuration
   }
   public function getUseCache(): bool
   {
-    return $this->disableCaching;
+    return !$this->disableCaching;
   }
 }
