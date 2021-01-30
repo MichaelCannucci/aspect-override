@@ -6,6 +6,8 @@ use AspectOverride\Loader\AutoloaderHijacker;
 use AspectOverride\Loader\AutoloaderWrapper;
 use AspectOverride\Util\Configuration;
 use Composer\Autoload\ClassLoader;
+use ReflectionClass;
+use ReflectionParameter;
 use RuntimeException;
 
 class Instance
@@ -29,14 +31,28 @@ class Instance
    * @param array{
    *  directories: string[],
    *  temporaryFilesDir: string,
-   *  disableCaching: bool
+   *  disableCaching: bool,
+   *  compatibilityMode: bool
    * } $options 
    */
   public function init(array $options): void
   {
-    $this->config = new Configuration(...$options);
+    // Fill the missing parameter keys (PHP 8.0, I miss you)
+    $reflection = new ReflectionClass(Configuration::class);
+    /** @var string[] */
+    $parameters = array_map(
+      function (ReflectionParameter $parameter) {return $parameter->getName();},
+      $reflection->getConstructor()->getParameters()
+    );
+    foreach ($parameters as $parameter) {
+      if(!array_key_exists($parameter, $options)) {
+        $options[$parameter] = null;
+      }
+    }
+    ksort($options);
+    $this->config = new Configuration(...array_values($options));
     AutoloaderHijacker::hijack(ClassLoader::class, new AutoloaderWrapper());
-    foreach($this->autoloaderFiles as $file => $fileResolver) {
+    foreach ($this->autoloaderFiles as $file => $fileResolver) {
       AutoloaderHijacker::hijackMethod($file, $fileResolver, new AutoloaderWrapper());
     }
   }

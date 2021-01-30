@@ -10,16 +10,23 @@ class Configuration
   protected $tempFilesDir;
   /** @var bool */
   protected $disableCaching;
+  /** @var bool */
+  protected $compatibilityMode;
 
-  /** @param string[] $directories */
+  /** 
+   * NOTE: constructor arguments have to be sorted name-wise
+   * @param string[] $directories 
+   */
   public function __construct(
     array $directories = [], 
     string $temporaryFilesDir = '/tmp/aspect-override/', 
-    bool $disableCaching = false
+    bool $disableCaching = false,
+    bool $compatibilityMode = false
   ) {
-    $this->directories    = $this->processFolders($directories);
-    $this->tempFilesDir   = $this->processTemporary($temporaryFilesDir);
-    $this->disableCaching = $disableCaching;
+    $this->directories       = $this->processFolders($directories);
+    $this->tempFilesDir      = $this->processTemporary($temporaryFilesDir);
+    $this->disableCaching    = $disableCaching;
+    $this->compatibilityMode = $compatibilityMode;
   }
   /** 
    * @param string[] $directories 
@@ -54,5 +61,9 @@ class Configuration
   public function getUseCache(): bool
   {
     return !$this->disableCaching;
+  }
+  public function getUseCompatibiltyMode(): bool
+  {
+    return $this->compatibilityMode;
   }
 }
