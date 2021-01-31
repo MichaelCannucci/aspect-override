@@ -34,22 +34,22 @@ class OverrideFunctionVisitor extends NodeVisitorAbstract
       return;
     }
     $builder = new BuilderFactory();
-    $mockedFunctionCall = $builder->funcCall(
+    $callFunction = $builder->funcCall(
       $builder->var('__fn__'),
       array_map(function (Param $param) {
         return $param->var;
       }, $node->params)
     );
-    if($this->shouldReturn($node)){
+    if ($this->shouldReturnValue($node)){
       $ifBody = [
         'stmts' => [
-          new Return_($mockedFunctionCall)
+          new Return_($callFunction)
         ]
       ];
     } else {
       $ifBody = [
         'stmts' => [
-          new Expression($mockedFunctionCall),
+          new Expression($callFunction),
           new Return_()
         ]
       ];
@@ -65,7 +65,7 @@ class OverrideFunctionVisitor extends NodeVisitorAbstract
     );
     array_unshift($node->stmts, $stmt);
   }
-  protected function shouldReturn(ClassMethod $node): bool
+  protected function shouldReturnValue(ClassMethod $node): bool
   {
     $returnType = $node->returnType;
     if ($returnType instanceof Identifier) {
