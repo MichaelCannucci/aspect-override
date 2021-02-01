@@ -24,7 +24,7 @@ class Configuration
     $this->tempFilesDir      = $this->processTemporary($temporaryFilesDir);
     $this->disableCaching    = $disableCaching;
   }
-  /** @var array<string,string|string[]|bool> */
+  /** @return array<string,string|string[]|bool> */
   public function getRaw()
   {
     return [

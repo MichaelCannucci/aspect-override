@@ -7,7 +7,6 @@ use AspectOverride\Loader\AutoloaderWrapper;
 use AspectOverride\Util\Configuration;
 use Composer\Autoload\ClassLoader;
 use ReflectionClass;
-use ReflectionParameter;
 use RuntimeException;
 
 class Instance
@@ -40,7 +39,11 @@ class Instance
   {
     // Fill the missing parameter keys (PHP 8.0, I miss you)
     $reflection = new ReflectionClass(Configuration::class);
-    foreach ($reflection->getConstructor()->getParameters() as $parameter) {
+    $constructor = $reflection->getConstructor();
+    if(null === $constructor) {
+      throw new RuntimeException("Configuration::class doesn't have a constructor?");
+    }
+    foreach ($constructor->getParameters() as $parameter) {
       if(!array_key_exists($parameter->getName(), $options)) {
         $options[$parameter->getName()] = $parameter->getDefaultValue();
       }
