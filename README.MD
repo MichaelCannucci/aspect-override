@@ -15,7 +15,7 @@ Include this within your bootstrap file
 ```php
 <?php
 
-use AspectOverride\Core\Core;
+use AspectOverride\Core\Instance;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -23,7 +23,7 @@ require __DIR__ . '/../vendor/autoload.php';
 // directories => which directories to mock
 // temporaryFilesDir => where to save the temporary files, by default it is /tmp/
 // disableCaching => whether aspect classes should use their previously creating files if there are no changes
-Core::getInstance()->init([
+Instance::getInstance()->init([
   'directories' => [
     __DIR__ . '/../tests'
   ]
