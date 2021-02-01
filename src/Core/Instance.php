@@ -18,6 +18,8 @@ class Instance
   protected $autoloaderFiles = [];
   /** @var ?self */
   protected static $instance;
+  /** @var bool */
+  protected $autoLoaderNotConfigured = true;
 
   protected function __construct() { }
   public static function getInstance(): self
@@ -38,21 +40,19 @@ class Instance
   {
     // Fill the missing parameter keys (PHP 8.0, I miss you)
     $reflection = new ReflectionClass(Configuration::class);
-    /** @var string[] */
-    $parameters = array_map(
-      function (ReflectionParameter $parameter) {return $parameter->getName();},
-      $reflection->getConstructor()->getParameters()
-    );
-    foreach ($parameters as $parameter) {
-      if(!array_key_exists($parameter, $options)) {
-        $options[$parameter] = null;
+    foreach ($reflection->getConstructor()->getParameters() as $parameter) {
+      if(!array_key_exists($parameter->getName(), $options)) {
+        $options[$parameter->getName()] = $parameter->getDefaultValue();
       }
     }
     ksort($options);
     $this->config = new Configuration(...array_values($options));
-    AutoloaderHijacker::hijack(ClassLoader::class, new AutoloaderWrapper());
-    foreach ($this->autoloaderFiles as $file => $fileResolver) {
-      AutoloaderHijacker::hijackMethod($file, $fileResolver, new AutoloaderWrapper());
+    if($this->autoLoaderNotConfigured) {
+      AutoloaderHijacker::hijack(ClassLoader::class, new AutoloaderWrapper());
+      foreach ($this->autoloaderFiles as $file => $fileResolver) {
+        AutoloaderHijacker::hijackMethod($file, $fileResolver, new AutoloaderWrapper());
+      }
+      $this->autoLoaderNotConfigured = false;
     }
   }
   /**
@@ -64,6 +64,10 @@ class Instance
   {
     $this->autoloaderFiles[$file] = $fileResolver;
     return $this;
+  }
+  public function getConfiguration(): Configuration
+  {
+    return $this->config;
   }
   public function getTemporaryDirectory(): string
   {

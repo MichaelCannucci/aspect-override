@@ -17,12 +17,21 @@ class Configuration
    */
   public function __construct(
     array $directories = [], 
-    string $temporaryFilesDir = '/tmp/aspect-override/', 
-    bool $disableCaching = false
+    bool $disableCaching = false,
+    string $temporaryFilesDir = '/tmp/aspect-override/'
   ) {
     $this->directories       = $this->processFolders($directories);
     $this->tempFilesDir      = $this->processTemporary($temporaryFilesDir);
     $this->disableCaching    = $disableCaching;
+  }
+  /** @var array<string,string|string[]|bool> */
+  public function getRaw()
+  {
+    return [
+      'directories'    => $this->directories,
+      'tempFilesDir'   => $this->tempFilesDir,
+      'disableCaching' => $this->disableCaching
+    ];
   }
   /** 
    * @param string[] $directories 
