@@ -11,11 +11,11 @@ class ConfigurationTest extends TestCase
   {
     $previous = Instance::getInstance()->getConfiguration()->getRaw();
     Instance::getInstance()->init([
-      'temporaryFilesDir' => 'test/',
+      'temporaryFilesDir' => '/tmp/test/',
       'directories' => [__DIR__,'test2'] //__DIR__ should remain and the other directory should be removed (due to realpath), since it's invalid
     ]);
     $this->assertEquals(Instance::getInstance()->getDirectories(), [__DIR__]);
-    $this->assertEquals(Instance::getInstance()->getTemporaryDirectory(), 'test/');
+    $this->assertEquals(Instance::getInstance()->getTemporaryDirectory(), '/tmp/test/');
     // Restore
     Instance::getInstance()->init($previous);
   }
