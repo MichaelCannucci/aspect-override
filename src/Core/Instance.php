@@ -31,8 +31,7 @@ class Instance
    * @param array{
    *  directories: string[],
    *  temporaryFilesDir: string,
-   *  disableCaching: bool,
-   *  compatibilityMode: bool
+   *  disableCaching: bool
    * } $options 
    */
   public function init(array $options): void
