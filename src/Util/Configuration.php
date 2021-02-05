@@ -4,13 +4,17 @@ namespace AspectOverride\Util;
 
 class Configuration
 {
+  public const HIJACK_WITH_REWRITE = 'rewrite';
+  public const HIJACK_WITH_STREAMS = 'streams';
+
   /** @var string[] */
   protected $directories;
   /** @var string */
   protected $tempFilesDir;
   /** @var bool */
   protected $disableCaching;
-
+  /** @var string */
+  protected $hijackMethod;
   /** 
    * NOTE: constructor arguments have to be sorted name-wise
    * @param string[] $directories 
@@ -18,11 +22,16 @@ class Configuration
   public function __construct(
     array $directories = [], 
     bool $disableCaching = false,
-    string $temporaryFilesDir = '/tmp/aspect-override/'
+    string $temporaryFilesDir = '/tmp/aspect-override/',
+    string $hijackMethod = self::HIJACK_WITH_STREAMS
   ) {
     $this->directories       = $this->processFolders($directories);
     $this->tempFilesDir      = $this->processTemporary($temporaryFilesDir);
     $this->disableCaching    = $disableCaching;
+    if(!in_array($hijackMethod, [self::HIJACK_WITH_REWRITE, self::HIJACK_WITH_STREAMS])) {
+      throw new \RuntimeException("Invalid Value passed in for hijackMethod");
+    }
+    $this->hijackMethod      = $hijackMethod;
   }
   /** @return array<string,string|string[]|bool> */
   public function getRaw()
@@ -66,5 +75,9 @@ class Configuration
   public function getUseCache(): bool
   {
     return !$this->disableCaching;
+  }
+  public function getHijackMethod(): string
+  {
+    return $this->hijackMethod;
   }
 }
