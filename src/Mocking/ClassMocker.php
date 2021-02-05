@@ -42,7 +42,7 @@ class ClassMocker
       throw new \RuntimeException("File unaccessible: {$filePath}");
     }
     $path = $this->getCachedPath($filePath, $code);
-    if(Instance::getInstance()->shouldUseCache() && file_exists($path)) {
+    if(Instance::getInstance()->getConfiguration()->getUseCache() && file_exists($path)) {
       $this->includeFile($path);
       return;
     }
@@ -58,7 +58,7 @@ class ClassMocker
   {
     $name = basename($originalFilePath);
     $hash = $this->hasher->getHash($code, $name);
-    $tmpDir = Instance::getInstance()->getTemporaryDirectory();
+    $tmpDir = Instance::getInstance()->getConfiguration()->getTemporaryFilesDirectory();
     return $tmpDir . $hash;
   }
   protected function includeFile(string $path): void

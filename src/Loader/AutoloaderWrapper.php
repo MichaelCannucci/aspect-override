@@ -73,7 +73,7 @@ class AutoloaderWrapper
   protected function isInConfiguredDirectories(string $path): bool
   {
     $path = realpath($path) ?: '';
-    foreach(Instance::getInstance()->getDirectories() as $directory) {
+    foreach(Instance::getInstance()->getConfiguration()->getDirectories() as $directory) {
       if(false !== strpos($path, $directory)) {
         return true;
       }
