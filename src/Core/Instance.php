@@ -4,6 +4,7 @@ namespace AspectOverride\Core;
 
 use AspectOverride\Loader\AutoloaderHijacker;
 use AspectOverride\Loader\AutoloaderWrapper;
+use AspectOverride\Loader\StreamLoader;
 use AspectOverride\Util\Configuration;
 use ReflectionClass;
 use RuntimeException;
@@ -37,38 +38,13 @@ class Instance
    */
   public function init(array $options): void
   {
-    $this->fillDefaultOptions($options);
-    $this->config = new Configuration(
-      $options['directories'], 
-      $options['temporaryFilesDir'],
-      $options['disableCaching'],
-      $options['hijackMethod']
-    );
+    $this->config = new Configuration(...Configuration::toArgsList($options));
     if($this->autoLoaderNotConfigured) {
-      if($this->config->getHijackMethod() === Configuration::HIJACK_WITH_STREAMS) {
-        
-      } else {
-        AutoloaderHijacker::hijackComposer(new AutoloaderWrapper());
-        foreach ($this->autoloaderFiles as $file => $fileResolver) {
-          AutoloaderHijacker::hijackMethod($file, $fileResolver, new AutoloaderWrapper());
-        }
-        $this->autoLoaderNotConfigured = false;
+      AutoloaderHijacker::hijackComposer(new AutoloaderWrapper());
+      foreach ($this->autoloaderFiles as $file => $fileResolver) {
+        AutoloaderHijacker::hijackMethod($file, $fileResolver, new AutoloaderWrapper());
       }
-    }
-  }
-  /** @param array<string,mixed> $options*/
-  protected function fillDefaultOptions(array &$options): void
-  {
-    // Fill the missing parameter keys
-    $reflection = new ReflectionClass(Configuration::class);
-    $constructor = $reflection->getConstructor();
-    if(null === $constructor) {
-      throw new RuntimeException("Configuration::class doesn't have a constructor?");
-    }
-    foreach ($constructor->getParameters() as $parameter) {
-      if(!array_key_exists($parameter->getName(), $options)) {
-        $options[$parameter->getName()] = $parameter->getDefaultValue();
-      }
+      $this->autoLoaderNotConfigured = false;
     }
   }
   /**

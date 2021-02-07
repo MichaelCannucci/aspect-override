@@ -9,41 +9,11 @@ use ReflectionFunction;
 
 class AutoloaderHijacker
 {
-  /** @var array<class-string,mixed> */
-  protected static $originalClassLoaders = [];
-  /** @var array<string,mixed> */
-  protected static $originalMethodLoaders = [];
-
-  public static function restore(): void
-  {
-    self::clearOurLoaders();
-    foreach(self::$originalClassLoaders as $classLoader) {
-      spl_autoload_register($classLoader);
-    }
-  }
-  public static function restoreMethods(): void
-  {
-    self::clearOurLoaders();
-    foreach(self::$originalMethodLoaders as $method) {
-      spl_autoload_register($method);
-    }
-  }
-  protected static function clearOurLoaders(): void
-  {
-    $autoloaders = spl_autoload_functions();
-    foreach($autoloaders as $registeredLoader) {
-      if(is_array($registeredLoader) && $registeredLoader[0] instanceof AutoloaderWrapper) {
-        /** @phpstan-ignore-next-line */
-        spl_autoload_unregister($registeredLoader);
-      }
-    }
-  }
   public static function hijackComposer(AutoloaderWrapper $wrapper): void
   {
     $autoloaders = spl_autoload_functions();
     foreach ($autoloaders as $registeredLoader) {
       if (is_array($registeredLoader) && $registeredLoader[0] instanceof ClassLoader) {
-        self::$originalClassLoaders[get_class($registeredLoader[0])] = $registeredLoader;
         /** @phpstan-ignore-next-line type-hint for array callback */
         spl_autoload_unregister($registeredLoader);
         $registeredLoader[0] = $wrapper->setAutoloader($registeredLoader[0]);

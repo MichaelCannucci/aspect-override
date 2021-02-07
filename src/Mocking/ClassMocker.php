@@ -46,13 +46,17 @@ class ClassMocker
       $this->includeFile($path);
       return;
     }
+    file_put_contents($path, $this->transform($code));
+    $this->includeFile($path);
+  }
+  public function transform(string $code): string
+  {
     $ast = $this->parser->parse($code);
     if(!$ast) {
-      throw new \RuntimeException("Unable to parse file: {$filePath}");
+      throw new \RuntimeException("Unable to parse code");
     }
     $ast = $this->traverser->traverse($ast);
-    file_put_contents($path, '<?php' . PHP_EOL . $this->dumper->prettyPrint($ast));
-    $this->includeFile($path);
+    return '<?php' . PHP_EOL . $this->dumper->prettyPrint($ast);
   }
   protected function getCachedPath(string $originalFilePath, string $code): string
   {

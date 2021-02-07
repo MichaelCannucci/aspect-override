@@ -4,7 +4,7 @@ namespace AspectOverride\Util;
 
 class Configuration
 {
-  public const HIJACK_WITH_REWRITE = 'rewrite';
+  public const HIJACK_WITH_PROXY = 'proxy';
   public const HIJACK_WITH_STREAMS = 'streams';
 
   /** @var string[] */
@@ -23,15 +23,37 @@ class Configuration
     array $directories = [], 
     bool $disableCaching = false,
     string $temporaryFilesDir = '/tmp/aspect-override/',
-    string $hijackMethod = self::HIJACK_WITH_STREAMS
+    string $hijackMethod = self::HIJACK_WITH_PROXY
   ) {
     $this->directories       = $this->processFolders($directories);
     $this->tempFilesDir      = $this->processTemporary($temporaryFilesDir);
     $this->disableCaching    = $disableCaching;
-    if(!in_array($hijackMethod, [self::HIJACK_WITH_REWRITE, self::HIJACK_WITH_STREAMS])) {
+    if(!in_array($hijackMethod, [self::HIJACK_WITH_PROXY, self::HIJACK_WITH_STREAMS])) {
       throw new \RuntimeException("Invalid Value passed in for hijackMethod");
     }
     $this->hijackMethod      = $hijackMethod;
+  }
+  /** 
+   * @param array<string,mixed> $options
+   * @return list<mixed>
+   */
+  public static function toArgsList(array $options): array
+  {
+    // Fill the missing parameter keys
+    $reflection = new \ReflectionClass(Configuration::class);
+    $constructor = $reflection->getConstructor();
+    if(null === $constructor) {
+      throw new \RuntimeException("Configuration::class doesn't have a constructor?");
+    }
+    $args = [];
+    foreach ($constructor->getParameters() as $parameter) {
+      if(array_key_exists($parameter->getName(), $options)) {
+        $args[$parameter->getName()] = $options[$parameter->getName()];
+      } else {
+        $args[$parameter->getName()] = $parameter->getDefaultValue();
+      }
+    }
+    return array_values($args);
   }
   /** @return array<string,string|string[]|bool> */
   public function getRaw()

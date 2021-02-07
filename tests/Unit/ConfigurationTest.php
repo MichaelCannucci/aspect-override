@@ -14,8 +14,8 @@ class ConfigurationTest extends TestCase
       'temporaryFilesDir' => '/tmp/test/',
       'directories' => [__DIR__,'test2'] //__DIR__ should remain and the other directory should be removed (due to realpath), since it's invalid
     ]);
-    $this->assertEquals(Instance::getInstance()->getDirectories(), [__DIR__]);
-    $this->assertEquals(Instance::getInstance()->getTemporaryDirectory(), '/tmp/test/');
+    $this->assertEquals(Instance::getInstance()->getConfiguration()->getDirectories(), [__DIR__]);
+    $this->assertEquals(Instance::getInstance()->getConfiguration()->getTemporaryFilesDirectory(), '/tmp/test/');
     // Restore
     Instance::getInstance()->init($previous);
   }

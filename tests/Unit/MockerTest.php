@@ -19,7 +19,7 @@ class MockerTest extends TestCase
     $example = new OneMethod();
     $reflection = new ReflectionClass($example);
     $this->assertStringContainsString(
-      Instance::getInstance()->getTemporaryDirectory(),
+      Instance::getInstance()->getConfiguration()->getTemporaryFilesDirectory(),
       $reflection->getFileName()
     );
   }
