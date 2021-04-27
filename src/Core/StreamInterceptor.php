@@ -5,9 +5,6 @@ namespace AspectOverride\Core;
 use AspectOverride\Transformers\ClassTransformer;
 use AspectOverride\Transformers\FunctionOverrider;
 use AspectOverride\Transformers\Visitors\BeforeFunctionVisitor;
-use PhpParser\NodeTraverser;
-use PhpParser\NodeVisitor\NameResolver;
-use PhpParser\ParserFactory;
 
 /**
  * Implementation adapted from:

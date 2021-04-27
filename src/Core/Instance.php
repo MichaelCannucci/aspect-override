@@ -11,7 +11,7 @@ class Instance
     /** @var array<string,callable> */
     protected $autoloaderFiles = [];
     /** @var bool */
-    protected $autoLoaderNotConfigured = true;
+    protected $hasNeverBeenInitalized = true;
 
     public function __construct(
         StreamInterceptor $interceptor = null
@@ -23,8 +23,11 @@ class Instance
     public function initialize(Configuration $configuration): void
     {
         $this->config = $configuration;
-        $this->interceptor->restore();
-        $this->interceptor->enable();
+        if($this->hasNeverBeenInitalized) {
+            $this->hasNeverBeenInitalized = false;
+            $this->interceptor->restore();
+            $this->interceptor->enable();
+        }
     }
 
     public function getConfiguration(): Configuration
