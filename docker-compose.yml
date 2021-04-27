@@ -1,0 +1,14 @@
+version: "3.5"
+services:
+  php:
+    working_dir: /home/app
+    volumes:
+    - ./:/home/app
+    build: ./docker
+    environment:
+      - PHP_IDE_CONFIG=serverName=php-dev
+      - XDEBUG_SESSION=1
+      - XDEBUG_MODE=debug,trace
+      - XDEBUG_CONFIG=client_host=host.docker.internal
+
+
