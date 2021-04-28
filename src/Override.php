@@ -2,6 +2,7 @@
 
 namespace AspectOverride;
 
+use AspectOverride\Facades\Instance;
 use AspectOverride\Facades\Registry;
 
 class Override
@@ -9,14 +10,14 @@ class Override
     /**
      * Override a class's method
      * ex: MyClass::run will now echo 'Works!'
-     * @param class-string $class
+     * @psalm-param class-string $class
      * @return callable Function to unregister the override
      */
     public static function method(string $class, string $method, callable $override): callable
     {
-        Registry::setForClass($class, $method, $override);
+        Instance::getInstance()->getRegistry()->setForClass($class, $method, $override);
         return function () use ($class, $method) {
-            Registry::removeForClass($class, $method);
+            Instance::getInstance()->getRegistry()->removeForClass($class, $method);
         };
     }
 
@@ -27,20 +28,31 @@ class Override
      * @param callable $override
      * @return callable Function to unregister the override
      */
-    public static function function (string $fn, callable $override): callable
+    public static function function(string $fn, callable $override): callable
     {
-        Registry::setForFunction($fn, $override);
+        Instance::getInstance()->getRegistry()->setForFunction($fn, $override);
         return function () use ($fn) {
-            Registry::removeForFunction($fn);
+            Instance::getInstance()->getRegistry()->removeForFunction($fn);
         };
+    }
+
+    /**
+     * Ensure that the function is always overwritten
+     * @param string $fn function name
+     * @return void 
+     */
+    public static function reserve(string $fn): void
+    {
+        Instance::getInstance()->getRegistry()->setForFunction($fn, function () {
+        });
     }
 
     /**
      * Remove all the overrides
      * @return void
      */
-    public static function clean(): void
+    public static function reset(): void
     {
-        Registry::clean();
+        Instance::getInstance()->getRegistry()->reset();
     }
 }

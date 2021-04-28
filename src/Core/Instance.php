@@ -8,30 +8,38 @@ class Instance
     protected $config;
     /** @var StreamInterceptor */
     protected $interceptor;
-    /** @var array<string,callable> */
-    protected $autoloaderFiles = [];
-    /** @var bool */
-    protected $hasNeverBeenInitalized = true;
+    /** @var Registry */
+    protected $registry;
 
     public function __construct(
-        StreamInterceptor $interceptor = null
-    )
-    {
-        $this->interceptor = $interceptor ?? new StreamInterceptor();
+        Configuration $configuration = null,
+        StreamInterceptor $interceptor = null,
+        Registry $registry = null,
+    ) {
+        $this->interceptor = $interceptor ?? new StreamInterceptor($configuration);
+        $this->config = $configuration ?? new Configuration();
+        $this->registry = $registry ?? new Registry();
+        $this->reset();
+        $this->start();
     }
 
-    public function initialize(Configuration $configuration): void
+    public function reset(): void
     {
-        $this->config = $configuration;
-        if($this->hasNeverBeenInitalized) {
-            $this->hasNeverBeenInitalized = false;
-            $this->interceptor->restore();
-            $this->interceptor->enable();
-        }
+        $this->interceptor->restore();
+    }
+
+    public function start(): void
+    {
+        $this->interceptor->intercept();
     }
 
     public function getConfiguration(): Configuration
     {
         return $this->config;
+    }
+
+    public function getRegistry(): Registry
+    {
+        return $this->registry;
     }
 }

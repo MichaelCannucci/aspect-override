@@ -1,8 +1,6 @@
 <?php
 
-namespace Tests\Util\TestClasses;
-
-use PhpParser\Node\Expr\FuncCall;
+namespace Tests\Util\Fixtures;
 
 class TestClass
 {

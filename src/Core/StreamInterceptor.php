@@ -2,9 +2,10 @@
 
 namespace AspectOverride\Core;
 
-use AspectOverride\Transformers\ClassTransformer;
-use AspectOverride\Transformers\FunctionOverrider;
-use AspectOverride\Transformers\Visitors\BeforeFunctionVisitor;
+use AspectOverride\Processors\ClassMethodProcessor;
+use AspectOverride\Processors\FunctionProcessor;
+use Exception;
+use RuntimeException;
 
 /**
  * Implementation adapted from:
@@ -31,23 +32,45 @@ class StreamInterceptor
      */
     public $context;
 
-    /** @var bool */
-    protected $isIntercepting = false;
+    /** 
+     * @var AbstractProcessor[] 
+     * */
+    protected static $streamProcessors;
 
-    /** @var StreamProcessor */
-    protected $streamProcessor;
+    /** 
+     * @var Configuration 
+     * */
+    protected static $configuration;
 
-    public function __construct(StreamProcessor $processor = null)
+    /**
+     * @param AbstractProcessor[] $streamProcessors
+     */
+    public function __construct(Configuration $configuration = null, array $streamProcessors = null)
     {
-        $this->streamProcessor = $processor ?? new StreamProcessor();
+        if ($configuration) {
+            self::$configuration = $configuration;
+        }
+        if ($streamProcessors) {
+            self::$streamProcessors = $streamProcessors;
+        }
+        if (empty($streamProcessors)) {
+            self::$streamProcessors = $streamProcessors ?: [
+                new ClassMethodProcessor(),
+                new FunctionProcessor()
+            ];
+        }
+        foreach (self::$streamProcessors as $streamProcessors) {
+            $streamProcessors->register();
+        }
     }
 
-    public function enable(): void
+    public function intercept(): void
     {
-        if (!$this->isIntercepting) {
-            ini_set('opcache.enable', '0');
-            stream_wrapper_unregister(self::PROTOCOL);
-            $this->isIntercepting = stream_wrapper_register(self::PROTOCOL, __CLASS__);
+        ini_set('opcache.enable', '0');
+        stream_wrapper_unregister(self::PROTOCOL);
+        $result = stream_wrapper_register(self::PROTOCOL, __CLASS__);
+        if (!$result) {
+            throw new \RuntimeException("Unable to register wrapper for " . self::PROTOCOL);
         }
     }
 
@@ -67,9 +90,9 @@ class StreamInterceptor
 
     protected function shouldProcess(string $uri): bool
     {
-        $allowedDirectories = \AspectOverride\Facades\Instance::getConfiguration()->getDirectories();
-        foreach($allowedDirectories as $directory) {
-            if($this->isPhpFile($uri) && false !== strpos($uri, $directory)) {
+        $allowedDirectories = self::$configuration->getDirectories();
+        foreach ($allowedDirectories as $directory) {
+            if ($this->isPhpFile($uri) && false !== strpos($uri, $directory)) {
                 return true;
             }
         }
@@ -98,17 +121,19 @@ class StreamInterceptor
 
         $this->restore();
 
-        if($this->shouldProcess($path)) {
-            $this->resource = $this->streamProcessor->processOpen($path);
+        if (isset($this->context)) {
+            $this->resource = fopen($path, $mode, (bool)($options & STREAM_USE_PATH), $this->context);
         } else {
-            if (isset($this->context)) {
-                $this->resource = fopen($path, $mode, (bool)($options & STREAM_USE_PATH), $this->context);
-            } else {
-                $this->resource = fopen($path, $mode, (bool)($options & STREAM_USE_PATH));
+            $this->resource = fopen($path, $mode, (bool)($options & STREAM_USE_PATH));
+        }
+
+        if (false !== $this->resource && $options & self::STREAM_OPEN_FOR_INCLUDE && $this->shouldProcess($path)) {
+            foreach (self::$streamProcessors as $streamProcessors) {
+                stream_filter_append($this->resource, $streamProcessors::NAME, \STREAM_FILTER_READ);
             }
         }
 
-        $this->enable();
+        $this->intercept();
 
         return false !== $this->resource;
     }
@@ -262,7 +287,7 @@ class StreamInterceptor
         } else {
             $result = stat($path);
         }
-        $this->enable();
+        $this->intercept();
 
         return $result;
     }
@@ -302,7 +327,7 @@ class StreamInterceptor
         } else {
             $this->resource = opendir($path);
         }
-        $this->enable();
+        $this->intercept();
 
         return false !== $this->resource;
     }
@@ -360,7 +385,7 @@ class StreamInterceptor
         } else {
             $result = mkdir($path, $mode, (bool)($options & STREAM_MKDIR_RECURSIVE));
         }
-        $this->enable();
+        $this->intercept();
 
         return $result;
     }
@@ -383,7 +408,7 @@ class StreamInterceptor
         } else {
             $result = rename($path_from, $path_to);
         }
-        $this->enable();
+        $this->intercept();
 
         return $result;
     }
@@ -405,7 +430,7 @@ class StreamInterceptor
         } else {
             $result = rmdir($path);
         }
-        $this->enable();
+        $this->intercept();
 
         return $result;
     }
@@ -474,8 +499,8 @@ class StreamInterceptor
             case STREAM_OPTION_READ_BUFFER:
                 // stream_set_read_buffer returns 0 in case of success
                 return 0 === stream_set_read_buffer($this->resource, $arg1);
-            // STREAM_OPTION_CHUNK_SIZE does not exist at all in PHP 7
-            /*case STREAM_OPTION_CHUNK_SIZE:
+                // STREAM_OPTION_CHUNK_SIZE does not exist at all in PHP 7
+                /*case STREAM_OPTION_CHUNK_SIZE:
                 return stream_set_chunk_size($this->resource, $arg1);*/
         }
 
@@ -519,7 +544,7 @@ class StreamInterceptor
         } else {
             $result = unlink($path);
         }
-        $this->enable();
+        $this->intercept();
 
         return $result;
     }
@@ -560,7 +585,7 @@ class StreamInterceptor
                 $result = chmod($path, $value);
                 break;
         }
-        $this->enable();
+        $this->intercept();
 
         return $result;
     }

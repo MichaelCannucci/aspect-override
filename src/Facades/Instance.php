@@ -4,15 +4,15 @@
 namespace AspectOverride\Facades;
 
 use AspectOverride\Core\Configuration;
+use AspectOverride\Core\Instance as CoreInstance;
 
 /**
- * @method static void initialize(Configuration $configuration)
  * @method static Configuration getConfiguration()
  */
 class Instance
 {
     /** @var \AspectOverride\Core\Instance */
-    public static $instance;
+    public static $instance = null;
 
     /**
      * @param mixed $name
@@ -21,9 +21,21 @@ class Instance
      */
     public static function __callStatic($name, $arguments)
     {
-        if (!isset(self::$instance)) {
-            self::$instance = new \AspectOverride\Core\Instance();
+        return self::getInstance()->$name(...$arguments);
+    }
+
+    public static function getInstance(): CoreInstance
+    {
+        if (!self::$instance) {
+            throw new \RuntimeException("aspect-override has not been initalized, call AspectOverride\Facades\Instance::initialize()");
         }
-        return self::$instance->$name(...$arguments);
+        return self::$instance;
+    }
+
+    public static function initialize(Configuration $configuration)
+    {
+        self::$instance = new CoreInstance($configuration);
+        self::$instance->reset();
+        self::$instance->start();
     }
 }
