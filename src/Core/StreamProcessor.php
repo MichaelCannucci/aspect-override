@@ -27,8 +27,12 @@ class StreamProcessor
             $shouldCache = \AspectOverride\Facades\Instance::getConfiguration()->shouldCache();
             $temporaryDirectory = \AspectOverride\Facades\Instance::getConfiguration()->getTemporaryFilesDirectory();
             $code = file_get_contents($path, true);
+            if(false === $code) {
+                throw new \Exception("Unable to get file contents");
+            }
             if($shouldCache) {
-                $cachedPath = $temporaryDirectory . hash("sha256", $code) . ".php";
+                $hashed = hash("sha256", $code);
+                $cachedPath = $temporaryDirectory . $hashed . ".php";
                 if(!file_exists($cachedPath)) {
                     $this->saveToFileSystem($code, $cachedPath);
                 }
@@ -36,7 +40,9 @@ class StreamProcessor
             } else {
                 $resource = $this->toMemory($code);
             }
-            FunctionOverrider::loadFunctions($this->getStringBetween($code, "namespace", ";"));
+            if($namespace = $this->getStringBetween($code, "namespace", ";")) {
+                FunctionOverrider::loadFunctions($namespace);
+            }
             return $resource;
         } catch (\Exception $ignored) {
             return false;
@@ -61,19 +67,26 @@ class StreamProcessor
     /**
      * @param string $code
      * @return resource|false
+     * @throws \Exception unable to create the resource
      */
     protected function toMemory(string $code)
     {
         $transformed = $this->classTransformer->transform($code);
         $resource = fopen('php://memory','r+');
+        if(false === $resource) {
+            return false;
+        }
         fwrite($resource, $transformed);
         rewind($resource);
         return $resource;
     }
 
-    function getStringBetween($str,$from,$to)
+    /**
+     * @return false|string
+     */
+    function getStringBetween(string $str, string $from, string $to)
     {
         $sub = substr($str, stripos($str,$from)+strlen($from),strlen($str));
-        return substr($sub,0,stripos($sub,$to));
+        return substr($sub,0, stripos($sub,$to) ?: null);
     }
 }
