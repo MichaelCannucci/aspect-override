@@ -17,8 +17,6 @@ class ClassTransformer
     protected $traverser;
     /** @var Printer */
     protected $dumper;
-    /** @var NameResolver */
-    protected $nameResolver;
 
     public function __construct(
         NodeVisitorAbstract $visitor,
@@ -27,9 +25,8 @@ class ClassTransformer
     {
         $this->parser = (new ParserFactory())->create(ParserFactory::PREFER_PHP7);
         $this->dumper = $dumper ?? new Printer();
-        $this->nameResolver = new NameResolver;
         $this->traverser = new NodeTraverser();
-        $this->traverser->addVisitor($this->nameResolver);
+        $this->traverser->addVisitor(new NameResolver);
         $this->traverser->addVisitor($visitor);
     }
 
@@ -41,14 +38,5 @@ class ClassTransformer
         }
         $ast = $this->traverser->traverse($ast);
         return '<?php' . PHP_EOL . $this->dumper->prettyPrint($ast);
-    }
-
-    public function getParsedNamespace(): string
-    {
-        $namespaceNode = $this->nameResolver->getNameContext()->getNamespace();
-        if(null === $namespaceNode) {
-            throw new \RuntimeException("Must transform code before being able to access the namespace");
-        }
-        return $namespaceNode->toString();
     }
 }

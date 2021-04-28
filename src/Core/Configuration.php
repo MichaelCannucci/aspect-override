@@ -19,15 +19,19 @@ class Configuration
     public function __construct()
     {
         $this->directories = [];
-        $this->tempFilesDir = $this->setTemporaryFilesDirectory('/tmp/aspect-override');
+        $this->setTemporaryFilesDirectory('/tmp/aspect-override');
+        $this->useCaching = false;
     }
 
-    /** @return array<string,string|string[]|bool> */
+    /**
+     * @return array<string,string|string[]|bool>
+     */
     public function getRaw()
     {
         return [
-            'directories' => $this->directories,
-            'tempFilesDir' => $this->tempFilesDir
+            'directories'  => $this->directories,
+            'tempFilesDir' => $this->tempFilesDir,
+            'useCaching'   => $this->useCaching
         ];
     }
 
@@ -58,7 +62,15 @@ class Configuration
         return $this;
     }
 
-    /** @return string[] */
+    public function setShouldUseCache(bool $value): self
+    {
+        $this->useCaching = $value;
+        return $this;
+    }
+
+    /**
+     * @return string[]
+     */
     public function getDirectories(): array
     {
         return $this->directories;
@@ -67,5 +79,10 @@ class Configuration
     public function getTemporaryFilesDirectory(): string
     {
         return $this->tempFilesDir;
+    }
+
+    public function shouldCache(): bool
+    {
+        return $this->useCaching;
     }
 }

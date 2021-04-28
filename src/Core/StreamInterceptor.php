@@ -34,6 +34,14 @@ class StreamInterceptor
     /** @var bool */
     protected $isIntercepting = false;
 
+    /** @var StreamProcessor */
+    protected $streamProcessor;
+
+    public function __construct(StreamProcessor $processor = null)
+    {
+        $this->streamProcessor = $processor ?? new StreamProcessor();
+    }
+
     public function enable(): void
     {
         if (!$this->isIntercepting) {
@@ -91,22 +99,13 @@ class StreamInterceptor
         $this->restore();
 
         if($this->shouldProcess($path)) {
-            // TODO: Cache files
-            $code = file_get_contents($path, true);
-            $transformer = new ClassTransformer(new BeforeFunctionVisitor());
-            $this->resource = fopen('php://memory','r+');
-            $transformed = $transformer->transform($code);
-            fwrite($this->resource, $transformed);
-            rewind($this->resource);
-            FunctionOverrider::loadFunctions($transformer->getParsedNamespace());
-            $this->enable();
-            return true;
-        }
-
-        if (isset($this->context)) {
-            $this->resource = fopen($path, $mode, (bool)($options & STREAM_USE_PATH), $this->context);
+            $this->resource = $this->streamProcessor->processOpen($path);
         } else {
-            $this->resource = fopen($path, $mode, (bool)($options & STREAM_USE_PATH));
+            if (isset($this->context)) {
+                $this->resource = fopen($path, $mode, (bool)($options & STREAM_USE_PATH), $this->context);
+            } else {
+                $this->resource = fopen($path, $mode, (bool)($options & STREAM_USE_PATH));
+            }
         }
 
         $this->enable();
