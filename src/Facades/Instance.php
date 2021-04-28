@@ -14,6 +14,11 @@ class Instance
     /** @var \AspectOverride\Core\Instance */
     public static $instance;
 
+    /**
+     * @param mixed $name
+     * @param mixed $arguments
+     * @return mixed
+     */
     public static function __callStatic($name, $arguments)
     {
         if (!isset(self::$instance)) {
