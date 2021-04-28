@@ -41,21 +41,10 @@ class BeforeFunctionVisitor extends NodeVisitorAbstract
                 return $param->var;
             }, $node->params)
         );
-        if ($this->shouldReturnValue($node)) {
-            $ifBody = [
-                'stmts' => [
-                    new Return_($callFunction)
-                ]
-            ];
-        } else {
-            $ifBody = [
-                'stmts' => [
-                    new Expression($callFunction),
-                    new Return_()
-                ]
-            ];
-        }
-        $stmt = new If_(
+        $ifBody = $this->shouldReturnAValue($node) ?
+            [ 'stmts' => [new Return_($callFunction)]] :
+                [ 'stmts' => [ new Expression($callFunction), new Return_()]];
+        $beforeHook = new If_(
             new Assign(
                 $builder->var('__fn__'),
                 $builder->funcCall($this->escape('\AspectOverride\Facades\Registry::getForClass'), [
@@ -64,10 +53,10 @@ class BeforeFunctionVisitor extends NodeVisitorAbstract
             ),
             $ifBody
         );
-        array_unshift($node->stmts, $stmt);
+        array_unshift($node->stmts, $beforeHook);
     }
 
-    protected function shouldReturnValue(ClassMethod $node): bool
+    protected function shouldReturnAValue(ClassMethod $node): bool
     {
         $returnType = $node->returnType;
         if ($returnType instanceof Identifier) {
