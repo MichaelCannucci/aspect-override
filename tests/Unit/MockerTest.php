@@ -5,10 +5,10 @@ namespace Tests\Unit;
 use AspectOverride\Facades\Registry;
 use AspectOverride\Override;
 use PHPUnit\Framework\TestCase;
-use Tests\Util\TestClasses\OverloadedFunction;
-use Tests\Util\TestClasses\MultipleMethods;
-use Tests\Util\TestClasses\OneMethod;
-use Tests\Util\TestClasses\TestClass;
+use Tests\Util\Fixtures\OverloadedFunction;
+use Tests\Util\Fixtures\MultipleMethods;
+use Tests\Util\Fixtures\OneMethod;
+use Tests\Util\Fixtures\TestClass;
 
 class MockerTest extends TestCase
 {
@@ -55,7 +55,6 @@ class MockerTest extends TestCase
     {
         Override::method(TestClass::class, 'voidReturn', function () {
             // Anything so the method doesn't throw
-            $a = 1;
         });
         $class = new TestClass();
         $this->assertNull($class->voidReturn());

@@ -3,14 +3,13 @@
 namespace AspectOverride\Transformers;
 
 use AspectOverride\Facades\Registry;
-use AspectOverride\Util\Utilities;
 
-class FunctionOverrider
+class FunctionTransformer
 {
-    public static function loadFunctions(string $namespace): void
-    {
-        foreach (Registry::getFunctions() as $function) {
-            $code = "
+  public static function loadFunctions(string $namespace): void
+  {
+    foreach (Registry::getFunctions() as $function) {
+      $code = "
             namespace {$namespace} {
               if(!function_exists('\\$namespace\\$function')) {
                 function {$function}() {
@@ -20,7 +19,7 @@ class FunctionOverrider
                 }
               }
             }";
-            eval($code);
-        }
+      eval($code);
     }
+  }
 }

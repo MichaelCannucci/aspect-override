@@ -21,9 +21,14 @@ class Instance
      */
     public static function __callStatic($name, $arguments)
     {
+        return self::getInstance()->$name(...$arguments);
+    }
+
+    public static function getInstance()
+    {
         if (!isset(self::$instance)) {
             self::$instance = new \AspectOverride\Core\Instance();
         }
-        return self::$instance->$name(...$arguments);
+        return self::$instance;
     }
 }

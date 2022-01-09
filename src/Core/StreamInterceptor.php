@@ -2,9 +2,7 @@
 
 namespace AspectOverride\Core;
 
-use AspectOverride\Transformers\ClassTransformer;
-use AspectOverride\Transformers\FunctionOverrider;
-use AspectOverride\Transformers\Visitors\BeforeFunctionVisitor;
+use AspectOverride\Processors\ClassMethodProcessor;
 
 /**
  * Implementation adapted from:
@@ -37,12 +35,13 @@ class StreamInterceptor
     /** @var StreamProcessor */
     protected $streamProcessor;
 
-    public function __construct(StreamProcessor $processor = null)
+    public function __construct(ClassMethodProcessor $processor = null)
     {
-        $this->streamProcessor = $processor ?? new StreamProcessor();
+        $this->streamProcessor = $processor ?? new ClassMethodProcessor();
+        $this->streamProcessor->register();
     }
 
-    public function enable(): void
+    public function intercept(): void
     {
         if (!$this->isIntercepting) {
             ini_set('opcache.enable', '0');
@@ -68,8 +67,8 @@ class StreamInterceptor
     protected function shouldProcess(string $uri): bool
     {
         $allowedDirectories = \AspectOverride\Facades\Instance::getConfiguration()->getDirectories();
-        foreach($allowedDirectories as $directory) {
-            if($this->isPhpFile($uri) && false !== strpos($uri, $directory)) {
+        foreach ($allowedDirectories as $directory) {
+            if ($this->isPhpFile($uri) && false !== strpos($uri, $directory)) {
                 return true;
             }
         }
@@ -98,17 +97,18 @@ class StreamInterceptor
 
         $this->restore();
 
-        if($this->shouldProcess($path)) {
-            $this->resource = $this->streamProcessor->processOpen($path);
+        if (isset($this->context)) {
+            $this->resource = fopen($path, $mode, (bool)($options & STREAM_USE_PATH), $this->context);
         } else {
-            if (isset($this->context)) {
-                $this->resource = fopen($path, $mode, (bool)($options & STREAM_USE_PATH), $this->context);
-            } else {
-                $this->resource = fopen($path, $mode, (bool)($options & STREAM_USE_PATH));
-            }
+            $this->resource = fopen($path, $mode, (bool)($options & STREAM_USE_PATH));
         }
 
-        $this->enable();
+        if (false !== $this->resource && $options & self::STREAM_OPEN_FOR_INCLUDE && $this->shouldProcess($path)) {
+            echo $path;
+            stream_filter_append($this->resource, ClassMethodProcessor::NAME, \STREAM_FILTER_READ);
+        }
+
+        $this->intercept();
 
         return false !== $this->resource;
     }
@@ -262,7 +262,7 @@ class StreamInterceptor
         } else {
             $result = stat($path);
         }
-        $this->enable();
+        $this->intercept();
 
         return $result;
     }
@@ -302,7 +302,7 @@ class StreamInterceptor
         } else {
             $this->resource = opendir($path);
         }
-        $this->enable();
+        $this->intercept();
 
         return false !== $this->resource;
     }
@@ -360,7 +360,7 @@ class StreamInterceptor
         } else {
             $result = mkdir($path, $mode, (bool)($options & STREAM_MKDIR_RECURSIVE));
         }
-        $this->enable();
+        $this->intercept();
 
         return $result;
     }
@@ -383,7 +383,7 @@ class StreamInterceptor
         } else {
             $result = rename($path_from, $path_to);
         }
-        $this->enable();
+        $this->intercept();
 
         return $result;
     }
@@ -405,7 +405,7 @@ class StreamInterceptor
         } else {
             $result = rmdir($path);
         }
-        $this->enable();
+        $this->intercept();
 
         return $result;
     }
@@ -474,8 +474,8 @@ class StreamInterceptor
             case STREAM_OPTION_READ_BUFFER:
                 // stream_set_read_buffer returns 0 in case of success
                 return 0 === stream_set_read_buffer($this->resource, $arg1);
-            // STREAM_OPTION_CHUNK_SIZE does not exist at all in PHP 7
-            /*case STREAM_OPTION_CHUNK_SIZE:
+                // STREAM_OPTION_CHUNK_SIZE does not exist at all in PHP 7
+                /*case STREAM_OPTION_CHUNK_SIZE:
                 return stream_set_chunk_size($this->resource, $arg1);*/
         }
 
@@ -519,7 +519,7 @@ class StreamInterceptor
         } else {
             $result = unlink($path);
         }
-        $this->enable();
+        $this->intercept();
 
         return $result;
     }
@@ -560,7 +560,7 @@ class StreamInterceptor
                 $result = chmod($path, $value);
                 break;
         }
-        $this->enable();
+        $this->intercept();
 
         return $result;
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Util\TestClasses;
+namespace Tests\Util\Fixtures;
 
 class MultipleMethods
 {

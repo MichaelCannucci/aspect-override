@@ -23,7 +23,8 @@ class RegistryTest extends TestCase
      */
     public function test_can_save_callback(string $class, string $method)
     {
-        Registry::setForClass($class, $method, function () {});
+        Registry::setForClass($class, $method, function () {
+        });
         $this->assertNotNull(Registry::getForClass($class, $method));
     }
 

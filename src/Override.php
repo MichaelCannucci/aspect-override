@@ -27,12 +27,23 @@ class Override
      * @param callable $override
      * @return callable Function to unregister the override
      */
-    public static function function (string $fn, callable $override): callable
+    public static function function(string $fn, callable $override): callable
     {
         Registry::setForFunction($fn, $override);
         return function () use ($fn) {
             Registry::removeForFunction($fn);
         };
+    }
+
+    /**
+     * Ensure that the function is always overwritten
+     * @param string $fn function name
+     * @return void 
+     */
+    public static function reserve(string $fn): void
+    {
+        Registry::setForFunction($fn, function () {
+        });
     }
 
     /**

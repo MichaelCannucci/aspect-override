@@ -8,26 +8,28 @@ class Instance
     protected $config;
     /** @var StreamInterceptor */
     protected $interceptor;
-    /** @var array<string,callable> */
-    protected $autoloaderFiles = [];
-    /** @var bool */
-    protected $hasNeverBeenInitalized = true;
 
     public function __construct(
         StreamInterceptor $interceptor = null
-    )
-    {
+    ) {
         $this->interceptor = $interceptor ?? new StreamInterceptor();
     }
 
     public function initialize(Configuration $configuration): void
     {
         $this->config = $configuration;
-        if($this->hasNeverBeenInitalized) {
-            $this->hasNeverBeenInitalized = false;
-            $this->interceptor->restore();
-            $this->interceptor->enable();
-        }
+        $this->reset();
+        $this->start();
+    }
+
+    public function reset(): void
+    {
+        $this->interceptor->restore();
+    }
+
+    public function start(): void
+    {
+        $this->interceptor->intercept();
     }
 
     public function getConfiguration(): Configuration
