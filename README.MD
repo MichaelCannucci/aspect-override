@@ -15,8 +15,6 @@ Include this within your test runner's bootstrap file
 ```php
 <?php
 
-use AspectOverride\Core\Instance;
-
 require __DIR__ . '/../vendor/autoload.php';
 
 // options are:
