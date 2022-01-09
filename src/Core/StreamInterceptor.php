@@ -3,6 +3,8 @@
 namespace AspectOverride\Core;
 
 use AspectOverride\Processors\ClassMethodProcessor;
+use AspectOverride\Processors\FunctionProcessor;
+use RuntimeException;
 
 /**
  * Implementation adapted from:
@@ -32,13 +34,18 @@ class StreamInterceptor
     /** @var bool */
     protected $isIntercepting = false;
 
-    /** @var ClassMethodProcessor */
-    protected $streamProcessor;
+    /** @var AbstractProcessor[] */
+    protected $streamProcessors;
 
-    public function __construct(ClassMethodProcessor $processor = null)
+    /**
+     * @param AbstractProcessor[] $streamProcessors
+     */
+    public function __construct(array $streamProcessors = [])
     {
-        $this->streamProcessor = $processor ?? new ClassMethodProcessor();
-        $this->streamProcessor->register();
+        $this->streamProcessors = $streamProcessors ?: [new ClassMethodProcessor(), new FunctionProcessor()];
+        foreach ($this->streamProcessors as $streamProcessors) {
+            $streamProcessors->register();
+        }
     }
 
     public function intercept(): void
@@ -104,8 +111,9 @@ class StreamInterceptor
         }
 
         if (false !== $this->resource && $options & self::STREAM_OPEN_FOR_INCLUDE && $this->shouldProcess($path)) {
-            echo $path;
-            stream_filter_append($this->resource, ClassMethodProcessor::NAME, \STREAM_FILTER_READ);
+            foreach ($this->streamProcessors as $streamProcessors) {
+                stream_filter_append($this->resource, $streamProcessors::NAME, \STREAM_FILTER_READ);
+            }
         }
 
         $this->intercept();

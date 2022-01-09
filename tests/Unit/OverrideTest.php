@@ -10,8 +10,18 @@ use Tests\Util\Fixtures\MultipleMethods;
 use Tests\Util\Fixtures\OneMethod;
 use Tests\Util\Fixtures\TestClass;
 
-class MockerTest extends TestCase
+class OverrideTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        Registry::clean();
+    }
+
+    protected function tearDown(): void
+    {
+        Registry::clean();
+    }
+
     public function test_can_override_class_method()
     {
         Override::method(OneMethod::class, 'say', function () {
