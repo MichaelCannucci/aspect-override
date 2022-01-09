@@ -32,7 +32,7 @@ class StreamInterceptor
     /** @var bool */
     protected $isIntercepting = false;
 
-    /** @var StreamProcessor */
+    /** @var ClassMethodProcessor */
     protected $streamProcessor;
 
     public function __construct(ClassMethodProcessor $processor = null)

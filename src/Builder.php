@@ -17,7 +17,7 @@ class Builder
         $this->paths = $paths;
         return $this;
     }
-    public function build(): Instance
+    public function load(): Instance
     {
         \AspectOverride\Facades\Instance::initialize(
             \AspectOverride\Core\Configuration::create()

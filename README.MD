@@ -11,7 +11,7 @@ composer require --dev mcannucci/aspect-override
 ```
 
 ### Bootstraping
-Include this within your bootstrap file
+Include this within your test runner's bootstrap file
 ```php
 <?php
 
@@ -20,17 +20,12 @@ use AspectOverride\Core\Instance;
 require __DIR__ . '/../vendor/autoload.php';
 
 // options are:
-// setDirectories => The directory in which php classes are elligble for monkey patching/interception
-// setTemporaryFilesDirectory => where to save the temporary files, by default it is /tmp/aspect-override
-// setShouldUseCache => whether aspect classes should use their previously creating files if there are no changes
-AspectOverride\Facades\Instance::initialize(
-    \AspectOverride\Core\Configuration::create()
-        ->setTemporaryFilesDirectory("/tmp/temporary_directory")
-        ->setDirectories([
-            __DIR__ . '/../tests/Util/TestClasses'
-        ])
-        ->setShouldUseCache(false)
-);
+// setAllowedDirectories => The directory in which php classes are elligble for monkey patching/interception
+AspectOverride\Builder::create()
+    ->setAllowedDirectories([
+        __DIR__ . '/../tests/Util/Fixtures'
+    ])
+    ->load();
 ```
 
 ### Usage
@@ -57,4 +52,5 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Acknowledgements
 
-Heavily inspired by [AspectMock](https://github.com/Codeception/AspectMock) and [GO AOP!](https://github.com/goaop/framework)
+Functionality Heavily inspired by [AspectMock](https://github.com/Codeception/AspectMock)
+Heavily Inspired by [php-vcr](https://github.com/php-vcr/php-vcr) for monkey-patching through PHP streams
