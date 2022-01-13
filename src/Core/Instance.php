@@ -16,7 +16,7 @@ class Instance
         StreamInterceptor $interceptor = null,
         Registry $registry = null,
     ) {
-        $this->interceptor = $interceptor ?? new StreamInterceptor($this);
+        $this->interceptor = $interceptor ?? new StreamInterceptor($configuration);
         $this->config = $configuration ?? new Configuration();
         $this->registry = $registry ?? new Registry();
         $this->reset();

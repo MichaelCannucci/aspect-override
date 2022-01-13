@@ -35,24 +35,31 @@ class StreamInterceptor
     /** 
      * @var AbstractProcessor[] 
      * */
-    protected $streamProcessors;
+    protected static $streamProcessors;
 
     /** 
-     * @var Instance 
+     * @var Configuration 
      * */
-    protected $instance;
+    protected static $configuration;
 
     /**
      * @param AbstractProcessor[] $streamProcessors
      */
-    public function __construct(Instance $instance, array $streamProcessors = [])
+    public function __construct(Configuration $configuration = null, array $streamProcessors = null)
     {
-        $this->instance = $instance;
-        $this->streamProcessors = $streamProcessors ?: [
-            new ClassMethodProcessor(),
-            new FunctionProcessor()
-        ];
-        foreach ($this->streamProcessors as $streamProcessors) {
+        if ($configuration) {
+            self::$configuration = $configuration;
+        }
+        if ($streamProcessors) {
+            self::$streamProcessors = $streamProcessors;
+        }
+        if (empty($streamProcessors)) {
+            self::$streamProcessors = $streamProcessors ?: [
+                new ClassMethodProcessor(),
+                new FunctionProcessor()
+            ];
+        }
+        foreach (self::$streamProcessors as $streamProcessors) {
             $streamProcessors->register();
         }
     }
@@ -83,8 +90,7 @@ class StreamInterceptor
 
     protected function shouldProcess(string $uri): bool
     {
-        $allowedDirectories = $this->instance->getConfiguration()->getDirectories();
-
+        $allowedDirectories = self::$configuration->getDirectories();
         foreach ($allowedDirectories as $directory) {
             if ($this->isPhpFile($uri) && false !== strpos($uri, $directory)) {
                 return true;
@@ -122,7 +128,7 @@ class StreamInterceptor
         }
 
         if (false !== $this->resource && $options & self::STREAM_OPEN_FOR_INCLUDE && $this->shouldProcess($path)) {
-            foreach ($this->streamProcessors as $streamProcessors) {
+            foreach (self::$streamProcessors as $streamProcessors) {
                 stream_filter_append($this->resource, $streamProcessors::NAME, \STREAM_FILTER_READ);
             }
         }

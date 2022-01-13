@@ -2,7 +2,7 @@
 
 namespace AspectOverride\Processors;
 
-use AspectOverride\Facades\Registry;
+use AspectOverride\Facades\Instance;
 
 class FunctionProcessor extends AbstractProcessor
 {
@@ -23,12 +23,13 @@ class FunctionProcessor extends AbstractProcessor
 
   public function loadFunctions(string $namespace): void
   {
-    foreach (Registry::getFunctions() as $function) {
+
+    foreach (Instance::getInstance()->getRegistry()->getFunctions() as $function) {
       $code = "
       namespace {$namespace} {
         if(!function_exists('\\$namespace\\$function')) {
           function {$function}() {
-            if(\$__fn__ = \AspectOverride\Facades\Registry::getForFunction('$function')) {
+            if(\$__fn__ = \AspectOverride\Facades\Instance::getInstance()->getRegistry()->getForFunction('$function')) {
               return \$__fn__(...func_get_args());
             }
           }
