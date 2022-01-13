@@ -8,16 +8,17 @@ class Instance
     protected $config;
     /** @var StreamInterceptor */
     protected $interceptor;
+    /** @var Registry */
+    protected $registry;
 
     public function __construct(
-        StreamInterceptor $interceptor = null
+        Configuration $configuration = null,
+        StreamInterceptor $interceptor = null,
+        Registry $registry = null,
     ) {
-        $this->interceptor = $interceptor ?? new StreamInterceptor();
-    }
-
-    public function initialize(Configuration $configuration): void
-    {
-        $this->config = $configuration;
+        $this->interceptor = $interceptor ?? new StreamInterceptor($this);
+        $this->config = $configuration ?? new Configuration();
+        $this->registry = $registry ?? new Registry();
         $this->reset();
         $this->start();
     }
@@ -35,5 +36,10 @@ class Instance
     public function getConfiguration(): Configuration
     {
         return $this->config;
+    }
+
+    public function getRegistry(): Registry
+    {
+        return $this->registry;
     }
 }

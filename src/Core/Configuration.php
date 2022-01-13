@@ -7,6 +7,9 @@ class Configuration
     /** @var string[] */
     protected $directories;
 
+    /** @var bool */
+    protected $debug;
+
     public static function create(): self
     {
         return new self();
@@ -15,6 +18,7 @@ class Configuration
     public function __construct()
     {
         $this->directories = [];
+        $this->debug = false;
     }
 
     /**
@@ -37,5 +41,16 @@ class Configuration
     public function getDirectories(): array
     {
         return $this->directories;
+    }
+
+    public function setDebugMode(bool $status): self
+    {
+        $this->debug = $status;
+        return $this;
+    }
+
+    public function isInDebugMode(): bool
+    {
+        return $this->debug;
     }
 }

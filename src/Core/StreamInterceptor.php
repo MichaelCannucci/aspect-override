@@ -4,6 +4,7 @@ namespace AspectOverride\Core;
 
 use AspectOverride\Processors\ClassMethodProcessor;
 use AspectOverride\Processors\FunctionProcessor;
+use Exception;
 use RuntimeException;
 
 /**
@@ -31,18 +32,26 @@ class StreamInterceptor
      */
     public $context;
 
-    /** @var bool */
-    protected $isIntercepting = false;
-
-    /** @var AbstractProcessor[] */
+    /** 
+     * @var AbstractProcessor[] 
+     * */
     protected $streamProcessors;
+
+    /** 
+     * @var Instance 
+     * */
+    protected $instance;
 
     /**
      * @param AbstractProcessor[] $streamProcessors
      */
-    public function __construct(array $streamProcessors = [])
+    public function __construct(Instance $instance, array $streamProcessors = [])
     {
-        $this->streamProcessors = $streamProcessors ?: [new ClassMethodProcessor(), new FunctionProcessor()];
+        $this->instance = $instance;
+        $this->streamProcessors = $streamProcessors ?: [
+            new ClassMethodProcessor(),
+            new FunctionProcessor()
+        ];
         foreach ($this->streamProcessors as $streamProcessors) {
             $streamProcessors->register();
         }
@@ -50,10 +59,11 @@ class StreamInterceptor
 
     public function intercept(): void
     {
-        if (!$this->isIntercepting) {
-            ini_set('opcache.enable', '0');
-            stream_wrapper_unregister(self::PROTOCOL);
-            $this->isIntercepting = stream_wrapper_register(self::PROTOCOL, __CLASS__);
+        ini_set('opcache.enable', '0');
+        stream_wrapper_unregister(self::PROTOCOL);
+        $result = stream_wrapper_register(self::PROTOCOL, __CLASS__);
+        if (!$result) {
+            throw new \RuntimeException("Unable to register wrapper for " . self::PROTOCOL);
         }
     }
 
@@ -73,7 +83,8 @@ class StreamInterceptor
 
     protected function shouldProcess(string $uri): bool
     {
-        $allowedDirectories = \AspectOverride\Facades\Instance::getConfiguration()->getDirectories();
+        $allowedDirectories = $this->instance->getConfiguration()->getDirectories();
+
         foreach ($allowedDirectories as $directory) {
             if ($this->isPhpFile($uri) && false !== strpos($uri, $directory)) {
                 return true;
