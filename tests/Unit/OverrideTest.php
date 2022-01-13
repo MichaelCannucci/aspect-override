@@ -23,8 +23,7 @@ class OverrideTest extends TestCase
         Override::method(TestClass::class, 'voidReturn', function () {
             // Anything so the method doesn't throw
         });
-        $class = new TestClass();
-        $this->assertNull($class->voidReturn());
+        $this->assertNull((new TestClass)->voidReturn());
     }
 
     public function test_private_function()
@@ -32,8 +31,7 @@ class OverrideTest extends TestCase
         Override::method(TestClass::class, 'privateMethod', function () {
             return null;
         });
-        $class = new TestClass();
-        $this->assertNull($class->fromPrivateMethod());
+        $this->assertNull((new TestClass())->fromPrivateMethod());
     }
 
     public function test_protected_function()
@@ -41,7 +39,29 @@ class OverrideTest extends TestCase
         Override::method(TestClass::class, 'protectedMethod', function () {
             return null;
         });
-        $class = new TestClass();
-        $this->assertNull($class->fromProtectedMethod());
+        $this->assertNull((new TestClass())->fromProtectedMethod());
+    }
+
+    public function test_static_function() {
+        Override::method(TestClass::class, 'staticFunction', function() {
+            return null;
+        });
+        $this->assertNull(TestClass::staticFunction());
+    }
+
+    public function test_no_white_space_function() 
+    {
+        Override::method(TestClass::class, 'noWhiteSpace', function() {
+            return 1;
+        });
+        $this->assertEquals(1, (new TestClass)->noWhiteSpace());
+    }
+
+    public function test_empty_function()
+    {
+        Override::method(TestClass::class, 'emptyFunction', function() {
+            return 1;
+        });
+        $this->assertEquals(1, (new TestClass)->emptyFunction());
     }
 }

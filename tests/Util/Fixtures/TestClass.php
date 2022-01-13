@@ -33,4 +33,15 @@ class TestClass
     {
         return $this->protectedMethod();
     }
+
+    public function emptyFunction()
+    {
+    }
+
+    public function noWhiteSpace(){}
+
+    public static function staticFunction()
+    {
+        throw new \RuntimeException("Should not run!");
+    }
 }
