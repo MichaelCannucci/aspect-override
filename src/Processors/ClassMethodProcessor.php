@@ -6,13 +6,23 @@ class ClassMethodProcessor extends AbstractProcessor
 {
     public const NAME = 'aspect_mock_method_override';
 
-    private const PATTERN = '/(public|private|protected)(\s+function\s+)(.+)(:.+|)({)(.+)([^\s])/sU';
+    private const PATTERN = '/(\s+function\s+)(.+)(:.+|)({)(.+)([^\s])/sU';
 
     private const METHOD_OVERRIDE = 'if' .
         '($__fn__ = \AspectOverride\Facades\Instance::getInstance()->getRegistry()->getForClass(__CLASS__, __FUNCTION__))' .
         '{ %s }';
 
     private const METHOD_RETURN_INDEX = 3;
+
+    protected function isAnEmptyBrace(string $a, string $b)
+    {
+        $hasLeftBrace = $a === '{';
+        $hasRightBrace = $b === '}';
+        if(strlen($b) > 1) {
+            $hasRightBrace = $b[0] === '}';
+        }
+        return $hasLeftBrace && $hasRightBrace;
+    }
 
     /**
      * 
@@ -28,10 +38,13 @@ class ClassMethodProcessor extends AbstractProcessor
         $transformed = preg_replace_callback(self::PATTERN, function ($m) {
             $return = (strpos($m[self::METHOD_RETURN_INDEX], 'void') === false) ? 'return $__fn__();' : '$__fn__(); return;';
             $template = sprintf(self::METHOD_OVERRIDE, $return);
+            // Handle function with no code/whitespace
+            if($this->isAnEmptyBrace($m[4], $m[5])) {
+                return $m[1] . $m[2] . $m[3] . $m[4] . $template . $m[5] .  $m[6];
+            }
             // Crude way of doing it, but we want our injection to be before the last capture group
-            return $m[1] . $m[2] . $m[3] . $m[4] . $m[5] . $m[6] . $template . $m[7];
-        }, $data, -1, $count,);
-        echo $transformed . PHP_EOL;
+            return $m[1] . $m[2] . $m[3] . $m[4] . $m[5] . $template . $m[6];
+        }, $data, -1, $count, PREG_SET_ORDER);
         return $transformed;
     }
 }
