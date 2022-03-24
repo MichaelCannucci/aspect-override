@@ -121,28 +121,32 @@ class StreamInterceptor
      */
     public function stream_open(string $path, string $mode, int $options, ?string &$openedPath): bool
     {
-        // file_exists catches paths like /dev/urandom that are missed by is_file.
-        if ('r' === substr($mode, 0, 1) && !file_exists($path)) {
-            return false;
-        }
-
-        $this->restore();
-
-        if (isset($this->context)) {
-            $this->resource = fopen($path, $mode, (bool)($options & STREAM_USE_PATH), $this->context);
-        } else {
-            $this->resource = fopen($path, $mode, (bool)($options & STREAM_USE_PATH));
-        }
-
-        if (false !== $this->resource && $options & self::STREAM_OPEN_FOR_INCLUDE && $this->shouldProcess($path)) {
-            foreach (self::$streamProcessors as $streamProcessors) {
-                stream_filter_append($this->resource, $streamProcessors::NAME, \STREAM_FILTER_READ);
+        try {
+            // file_exists catches paths like /dev/urandom that are missed by is_file.
+            if ('r' === substr($mode, 0, 1) && !file_exists($path)) {
+                return false;
             }
+
+            $this->restore();
+
+            if (isset($this->context)) {
+                $this->resource = fopen($path, $mode, (bool)($options & STREAM_USE_PATH), $this->context);
+            } else {
+                $this->resource = fopen($path, $mode, (bool)($options & STREAM_USE_PATH));
+            }
+
+            if (false !== $this->resource && $options & self::STREAM_OPEN_FOR_INCLUDE && $this->shouldProcess($path)) {
+                foreach (self::$streamProcessors as $streamProcessors) {
+                    stream_filter_append($this->resource, $streamProcessors::NAME, \STREAM_FILTER_READ);
+                }
+            }
+
+            $this->intercept();
+
+            return false !== $this->resource;
+        } catch (\Throwable $throwable) {
+            throw new \RuntimeException("Unexpected error occurred when transforming file, try excluding '$path' and rerunning tests");
         }
-
-        $this->intercept();
-
-        return false !== $this->resource;
     }
 
     /**
