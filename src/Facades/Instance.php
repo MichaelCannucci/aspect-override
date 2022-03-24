@@ -11,7 +11,7 @@ use AspectOverride\Core\Instance as CoreInstance;
  */
 class Instance
 {
-    /** @var \AspectOverride\Core\Instance */
+    /** @var \AspectOverride\Core\Instance|null */
     public static $instance = null;
 
     /**
@@ -32,7 +32,7 @@ class Instance
         return self::$instance;
     }
 
-    public static function initialize(Configuration $configuration)
+    public static function initialize(Configuration $configuration): void
     {
         self::$instance = new CoreInstance($configuration);
         self::$instance->reset();

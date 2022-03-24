@@ -2,6 +2,7 @@
 
 namespace AspectOverride\Core;
 
+use AspectOverride\Processors\AbstractProcessor;
 use AspectOverride\Processors\ClassMethodProcessor;
 use AspectOverride\Processors\FunctionProcessor;
 use Exception;
@@ -28,7 +29,7 @@ class StreamInterceptor
     /**
      * @see http://www.php.net/manual/en/class.streamwrapper.php#streamwrapper.props.context
      *
-     * @var resource the current context, or NULL if no context was passed to the caller function
+     * @var resource|null the current context, or NULL if no context was passed to the caller function
      */
     public $context;
 
@@ -188,7 +189,7 @@ class StreamInterceptor
      *
      * @see http://www.php.net/manual/en/streamwrapper.stream-read.php
      *
-     * @param int $count how many bytes of data from the current position should be returned
+     * @param int<0,max> $count how many bytes of data from the current position should be returned
      *
      * @return string|false If there are less than count bytes available, return as many as are available.
      *                      If no more data is available, return either FALSE or an empty string.
@@ -595,7 +596,7 @@ class StreamInterceptor
      *
      * @see http://www.php.net/manual/en/streamwrapper.stream-truncate.php
      *
-     * @param int $new_size the new size
+     * @param int<0,max> $new_size the new size
      *
      * @return bool returns TRUE on success or FALSE on failure
      */

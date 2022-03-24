@@ -9,6 +9,8 @@ services:
       - PHP_IDE_CONFIG=serverName=php-dev
       - XDEBUG_SESSION=1
       - XDEBUG_MODE=debug,trace
-      - XDEBUG_CONFIG=client_host=host.docker.internal
+      - XDEBUG_CONFIG=${XDEBUG_CONFIG:-cli_color=1 client_host=host.docker.internal client_port=9003 idekey=PHPSTORM}
+    extra_hosts:
+      - host.docker.internal:host-gateway
 
 
