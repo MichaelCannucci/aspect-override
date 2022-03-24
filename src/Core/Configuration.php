@@ -18,6 +18,7 @@ class Configuration
     public function __construct()
     {
         $this->directories = [];
+        $this->excludedDirectories = [];
     }
 
     protected function normalizeDirectories(array $directories) {
