@@ -31,6 +31,9 @@ class ClassMethodProcessor extends AbstractProcessor
             // Crude way of doing it, but we want our injection to be before the last capture group
             return $m[1] . $m[2] . $m[3] . $m[4] . $template . $m[5] . $m[6];
         }, $data, -1, $count, PREG_SET_ORDER);
+        if(!$transformed) {
+            throw new \RuntimeException("General failure in transforming php code");
+        }
         return $transformed;
     }
 }

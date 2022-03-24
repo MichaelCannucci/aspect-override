@@ -18,8 +18,8 @@
     },
     "require": {},
     "require-dev": {
-        "phpunit/phpunit": "8.*",
-        "phpstan/phpstan": "^0.12.64",
+        "phpunit/phpunit": "9.*",
+        "phpstan/phpstan": "^1.5.0",
         "rawr/cross-data-providers": "^2.3"
     },
     "scripts": {
