@@ -7,8 +7,8 @@ class Configuration
     /** @var string[] */
     protected $directories;
 
-    /** @var bool */
-    protected $debug;
+    /** @var string[] */
+    protected $excludedDirectories;
 
     public static function create(): self
     {
@@ -18,7 +18,14 @@ class Configuration
     public function __construct()
     {
         $this->directories = [];
-        $this->debug = false;
+    }
+
+    protected function normalizeDirectories(array $directories) {
+        return array_filter(
+            array_map(function (string $directory) {
+                return realpath($directory);
+            }, $directories)
+        );
     }
 
     /**
@@ -27,11 +34,7 @@ class Configuration
      */
     public function setDirectories(array $directories): self
     {
-        $this->directories = array_filter(
-            array_map(function (string $directory) {
-                return realpath($directory);
-            }, $directories)
-        );
+        $this->directories = $this->normalizeDirectories($directories);
         return $this;
     }
 
@@ -43,14 +46,21 @@ class Configuration
         return $this->directories;
     }
 
-    public function setDebugMode(bool $status): self
+    /**
+     * @param string[] $directories
+     * @return $this
+     */
+    public function setExcludedDirectories(array $directories): self
     {
-        $this->debug = $status;
+        $this->excludedDirectories = $this->normalizeDirectories($directories);
         return $this;
     }
 
-    public function isInDebugMode(): bool
+    /**
+     * @return string[]
+     */
+    public function getExcludedDirectories(): array
     {
-        return $this->debug;
+        return $this->excludedDirectories;
     }
 }
