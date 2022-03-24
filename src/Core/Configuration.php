@@ -21,7 +21,11 @@ class Configuration
         $this->excludedDirectories = [];
     }
 
-    protected function normalizeDirectories(array $directories) {
+    /**
+     * @param string[] $directories
+     * @return string[]
+     */
+    protected function normalizeDirectories(array $directories): array {
         return array_filter(
             array_map(function (string $directory) {
                 return realpath($directory);
