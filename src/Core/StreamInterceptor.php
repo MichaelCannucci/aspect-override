@@ -91,6 +91,12 @@ class StreamInterceptor
 
     protected function shouldProcess(string $uri): bool
     {
+        $excludedDirectories = self::$configuration->getExcludedDirectories();
+        foreach ($excludedDirectories as $excluded) {
+            if ($this->isPhpFile($uri) && false !== strpos($uri, $excluded)) {
+                return false;
+            }
+        }
         $allowedDirectories = self::$configuration->getDirectories();
         foreach ($allowedDirectories as $directory) {
             if ($this->isPhpFile($uri) && false !== strpos($uri, $directory)) {
