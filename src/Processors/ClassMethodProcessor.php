@@ -6,13 +6,13 @@ class ClassMethodProcessor extends AbstractProcessor
 {
     public const NAME = 'aspect_mock_method_override';
 
-    private const PATTERN = '/([^use]\s+function\s+)(.+)(:.+|)({)(.+)([^\s])/sU';
+    private const PATTERN = '/((?!use|abstract)\s+function\s+)(.+)(:.+{|)({)(.+)([^\s])/sU';
 
     private const METHOD_OVERRIDE = 'if' .
         '($__fn__ = \AspectOverride\Facades\Instance::getInstance()->getRegistry()->getForClass(__CLASS__, __FUNCTION__))' .
         '{ %s }';
 
-    private const METHOD_RETURN_INDEX = 3;
+    private const METHOD_RETURN_INDEX = 2;
 
     /**
      * 
@@ -23,10 +23,14 @@ class ClassMethodProcessor extends AbstractProcessor
      */
     public function transform(string $data): string
     {
-        // Ackward way to place the override function at the start of the function
-        // Using regex subsitutions to place the interception
+        // Awkward way to place the override function at the start of the function
+        // Using regex substitutions to place the interception
         $transformed = preg_replace_callback(self::PATTERN, function ($m) {
-            $return = (strpos($m[self::METHOD_RETURN_INDEX], 'void') === false) ? 'return $__fn__();' : '$__fn__(); return;';
+            // We might come across multiple function signatures in this capture group
+            // This namely happens with interfaces and abstract functions which are unimplemented
+            $signature = explode("function", $m[self::METHOD_RETURN_INDEX]);
+            $func = $signature[count($signature) - 1];
+            $return = (strpos($func, 'void') === false) ? 'return $__fn__();' : '$__fn__(); return;';
             $template = sprintf(self::METHOD_OVERRIDE, $return);
             // Crude way of doing it, but we want our injection to be before the last capture group
             return $m[1] . $m[2] . $m[3] . $m[4] . $template . $m[5] . $m[6];
