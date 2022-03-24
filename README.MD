@@ -17,13 +17,15 @@ Include this within your test runner's bootstrap file
 
 require __DIR__ . '/../vendor/autoload.php';
 
-// options are:
-// setAllowedDirectories => The directory in which php classes are elligble for monkey patching/interception
-AspectOverride\Builder::create()
-    ->setAllowedDirectories([
-        __DIR__ . '/../tests/Util/Fixtures'
-    ])
-    ->load();
+AspectOverride\Facades\Instance::initialize(
+    AspectOverride\Core\Configuration::create()
+        ->setDirectories([
+            __DIR__ . '/../app'
+        ])
+        ->setExcludedDirectories([
+            __DIR__ . '/../app/excluded'
+        ])
+);
 ```
 
 ### Usage
