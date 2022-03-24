@@ -145,7 +145,11 @@ class StreamInterceptor
 
             return false !== $this->resource;
         } catch (\Throwable $throwable) {
-            throw new \RuntimeException("Unexpected error occurred when transforming file, try excluding '$path' and rerunning tests");
+            throw new \RuntimeException(
+                "Unexpected error occurred when transforming file, " .
+                "try excluding '$path' and rerunning tests " .
+                "\n\noriginal error: " . $throwable->getMessage()
+            );
         }
     }
 
