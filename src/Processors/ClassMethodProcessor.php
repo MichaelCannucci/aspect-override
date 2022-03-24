@@ -14,16 +14,6 @@ class ClassMethodProcessor extends AbstractProcessor
 
     private const METHOD_RETURN_INDEX = 3;
 
-    protected function isAnEmptyBrace(string $a, string $b)
-    {
-        $hasLeftBrace = $a === '{';
-        $hasRightBrace = $b === '}';
-        if(strlen($b) > 1) {
-            $hasRightBrace = $b[0] === '}';
-        }
-        return $hasLeftBrace && $hasRightBrace;
-    }
-
     /**
      * 
      * Add the injection points for the monkey-patching
@@ -38,12 +28,8 @@ class ClassMethodProcessor extends AbstractProcessor
         $transformed = preg_replace_callback(self::PATTERN, function ($m) {
             $return = (strpos($m[self::METHOD_RETURN_INDEX], 'void') === false) ? 'return $__fn__();' : '$__fn__(); return;';
             $template = sprintf(self::METHOD_OVERRIDE, $return);
-            // Handle function with no code/whitespace
-            if($this->isAnEmptyBrace($m[4], $m[5])) {
-                return $m[1] . $m[2] . $m[3] . $m[4] . $template . $m[5] .  $m[6];
-            }
             // Crude way of doing it, but we want our injection to be before the last capture group
-            return $m[1] . $m[2] . $m[3] . $m[4] . $m[5] . $template . $m[6];
+            return $m[1] . $m[2] . $m[3] . $m[4] . $template . $m[5] . $m[6];
         }, $data, -1, $count, PREG_SET_ORDER);
         return $transformed;
     }
