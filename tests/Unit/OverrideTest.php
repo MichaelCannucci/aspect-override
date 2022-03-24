@@ -4,6 +4,8 @@ namespace Tests\Unit;
 
 use AspectOverride\Override;
 use PHPUnit\Framework\TestCase;
+use Tests\Util\Fixtures\AbstractClass;
+use Tests\Util\Fixtures\AbstractClassImplementation;
 use Tests\Util\Fixtures\TestClass;
 
 class OverrideTest extends TestCase
@@ -63,5 +65,12 @@ class OverrideTest extends TestCase
             return 1;
         });
         $this->assertEquals(1, (new TestClass)->emptyFunction());
+    }
+
+    public function test_abstract_implemented_function() {
+        Override::method(AbstractClass::class, 'B', function() {
+            return 1;
+        });
+        $this->assertEquals(1, (new AbstractClassImplementation())->B());
     }
 }

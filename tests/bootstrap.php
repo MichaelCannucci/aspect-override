@@ -7,5 +7,4 @@ AspectOverride\Facades\Instance::initialize(
         ->setDirectories([
             __DIR__ . '/../tests/Util/Fixtures'
         ])
-        ->setDebugMode(true)
 );
