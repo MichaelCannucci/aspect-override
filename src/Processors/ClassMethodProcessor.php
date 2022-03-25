@@ -6,7 +6,7 @@ class ClassMethodProcessor extends AbstractProcessor
 {
     public const NAME = 'aspect_mock_method_override';
 
-    private const PATTERN = '/(private|protected|public)?(\s+function\s+\S*\(.*?\)(\s*:.+\s*)?)(\s*{)/';
+    private const PATTERN = '/(private|protected|public)?(\s+function\s+\S*\([\s\S]*?\)(\s*:.+?\s*)?)(\s*{)/';
 
     private const METHOD_OVERRIDE = 'if' .
         '($__fn__ = \AspectOverride\Facades\Instance::getInstance()->getRegistry()->getForClass(__CLASS__, __FUNCTION__))' .
