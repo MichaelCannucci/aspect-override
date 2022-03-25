@@ -27,7 +27,7 @@ class ClassMethodProcessor extends AbstractProcessor
         // Using regex substitutions to place the interception
         $transformed = preg_replace_callback(self::PATTERN, function ($m) {
             $returnType = $m[self::METHOD_RETURN_INDEX] ?? null;
-            $return = $returnType && (strpos($returnType, 'void') !== false) ? '$__fn__(); return;' : 'return $__fn__();';
+            $return = $returnType && (strpos($returnType, 'void') !== false) ? '$__fn__(...func_get_args()); return;' : 'return $__fn__(...func_get_args());';
             $template = sprintf(self::METHOD_OVERRIDE, $return);
             // We want our injection to be after the matches
             return $m[0] . $template;
