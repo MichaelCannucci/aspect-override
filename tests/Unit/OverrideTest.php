@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Tests\Util\Fixtures\AbstractClass;
 use Tests\Util\Fixtures\AbstractClassImplementation;
 use Tests\Util\Fixtures\TestClass;
+use Tests\Util\Fixtures\useFunctionClass;
 
 class OverrideTest extends TestCase
 {
@@ -72,5 +73,12 @@ class OverrideTest extends TestCase
             return 1;
         });
         $this->assertEquals(1, (new AbstractClassImplementation())->B());
+    }
+
+    public function test_classes_with_use_function_imports() {
+        Override::method(useFunctionClass::class, 'test', function() {
+            return 1;
+        });
+        $this->assertEquals(1, (new useFunctionClass())->test());
     }
 }
