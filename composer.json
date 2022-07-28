@@ -16,15 +16,19 @@
             "Tests\\": "tests/"
         }
     },
-    "require": {},
     "require-dev": {
-        "phpunit/phpunit": "9.*",
         "phpstan/phpstan": "^1.5.0",
-        "rawr/cross-data-providers": "^2.3"
+        "rawr/cross-data-providers": "^2.3",
+        "pestphp/pest": "^1.21"
     },
     "scripts": {
         "test": "vendor/bin/phpunit",
         "check": "vendor/bin/phpstan -l8 analyse src/",
         "coverage": "vendor/bin/phpunit --coverage-html html"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
     }
 }

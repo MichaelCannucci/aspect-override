@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use AspectOverride\Core\Registry;
+use AspectOverride\Core\ClassRegistry;
 use PHPUnit\Framework\TestCase;
 use TRegx\DataProvider\CrossDataProviders;
 
@@ -13,10 +13,10 @@ class RegistryTest extends TestCase
      */
     public function test_can_save_callback(string $class, string $method)
     {
-        $registry = new Registry();
-        $registry->setForClass($class, $method, function () {
+        $registry = new ClassRegistry();
+        $registry->set($class, $method, function () {
         });
-        $this->assertNotNull($registry->getForClass($class, $method));
+        $this->assertNotNull($registry->get($class, $method));
     }
 
     /**
@@ -24,11 +24,11 @@ class RegistryTest extends TestCase
      */
     public function test_can_remove_callback(string $class, string $method)
     {
-        $registry = new Registry();
-        $registry->setForClass($class, $method, function () {
+        $registry = new ClassRegistry();
+        $registry->set($class, $method, function () {
         });
-        $registry->removeForClass($class, $method);
-        $this->assertNull($registry->getForClass($class, $method));
+        $registry->remove($class, $method);
+        $this->assertNull($registry->get($class, $method));
     }
 
     public function class_provider()
