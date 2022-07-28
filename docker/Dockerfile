@@ -1,4 +1,4 @@
-FROM php:8
+FROM php:8.0
 
 RUN apt-get update && apt-get install libzip-dev -y
 
