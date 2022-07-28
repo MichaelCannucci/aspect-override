@@ -38,24 +38,12 @@
 use Tests\Support\SandboxHelper;
 
 function sandbox(Closure $setup, Closure $injected) {
-    $injected = "<?php" . PHP_EOL . SandboxHelper::getCode($injected, true);
-    $setup = SandboxHelper::getCode($setup, false);
-    $path = SandboxHelper::storeCodeInTemp($injected);
-    $directory = dirname($path);
-    $cwd = getcwd();
-    $runner = /** @lang InjectablePHP */ "
-        chdir('$cwd');
-        require __DIR__ . '/vendor/autoload.php';
-        
-        AspectOverride\Facades\Instance::initialize(
-        AspectOverride\Core\Configuration::create()
-            ->setDirectories([ '$directory' ])
-        );
-       
-        $setup
-                    
-        require '$path';
-    ";
-    $command = implode(' ', [PHP_BINARY, "-r", "\"$runner\""]);
-    return expect(shell_exec($command));
+    $injectedPath = SandboxHelper::getCode($injected, true, true);
+    $runnerPath = SandboxHelper::generateRunner($setup, $injectedPath);
+    $command = implode(' ', [PHP_BINARY, $runnerPath]);
+    $result = shell_exec($command);
+    if(is_numeric($result)) {
+        $result = (int)$result;
+    }
+    return expect($result);
 }
