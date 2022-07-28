@@ -8,7 +8,7 @@ class ClassMethodProcessor extends AbstractProcessor
 
     private const BEFORE_PATTERN = '/(private|protected|public)?(\s+function\s+\S*)\(([\s\S]*?)\)((\s*:.+?\s*)?)(\s*{)/';
 
-    private const METHOD_OVERRIDE_INDEX = 3;
+    private const METHOD_RETURN_TYPE = 4;
 
     private const AFTER_PATTERN = '/(return)(\s.+?)(;)/';
 
@@ -37,7 +37,7 @@ class ClassMethodProcessor extends AbstractProcessor
     protected function beforeTransform(string $data): string {
         $overwriteTransform = preg_replace_callback(self::BEFORE_PATTERN, function ($m) {
             // Method Overwrite
-            $returnType = $m[self::METHOD_OVERRIDE_INDEX] ?? null;
+            $returnType = $m[self::METHOD_RETURN_TYPE] ?? null;
             $return = $returnType && (strpos($returnType, 'void') !== false) ? '$__fn__(...func_get_args()); return;' : 'return $__fn__(...func_get_args());';
             $overwrite = sprintf(self::METHOD_OVERRIDE, $return);
             // We want our injection to be after the matches

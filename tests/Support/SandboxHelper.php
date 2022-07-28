@@ -2,13 +2,14 @@
 
 namespace Tests\Support;
 
+/** Hacky code to get tests running */
 class SandboxHelper
 {
     public static function generateRunner(\Closure $setup, string $injectedPath): string {
         $directory = dirname($injectedPath);
         $cwd = getcwd();
         $setupCode = self::getCode($setup);
-        $runner = /** @lang InjectablePHP */ "<?php
+        $runner = /** @lang PHP */ "<?php
             require '$cwd/vendor/autoload.php';
             
             AspectOverride\Facades\Instance::initialize(
@@ -20,7 +21,7 @@ class SandboxHelper
                         
             require '$injectedPath';
         ";
-        return SandboxHelper::tempFile($runner);
+        return self::tempFile($runner);
     }
     public static function getCode(\Closure $closure, bool $stripNamespaces = false): string {
         try {
@@ -35,10 +36,9 @@ class SandboxHelper
         if($stripNamespaces) {
             $code = preg_replace('/\\\\.+\\\\/m', '', $code);
         }
-        $code = "<?php" . PHP_EOL . $code;
-        return self::tempFile($code);
+        return self::tempFile("<?php" . PHP_EOL . $code);
     }
-    private static function tempFile(string $code): string {
+    public static function tempFile(string $code): string {
         $path = sys_get_temp_dir() . "/" . md5($code) . '.php';
         $return = file_put_contents($path, $code);
         if(false === $return) {

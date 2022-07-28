@@ -38,7 +38,7 @@
 use Tests\Support\SandboxHelper;
 
 function sandbox(Closure $setup, Closure $injected) {
-    $injectedPath = SandboxHelper::getCode($injected, true, true);
+    $injectedPath = SandboxHelper::getCode($injected, true);
     $runnerPath = SandboxHelper::generateRunner($setup, $injectedPath);
     $command = implode(' ', [PHP_BINARY, $runnerPath]);
     $result = shell_exec($command);
