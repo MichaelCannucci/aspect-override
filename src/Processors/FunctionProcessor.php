@@ -24,12 +24,12 @@ class FunctionProcessor extends AbstractProcessor
   public function loadFunctions(string $namespace): void
   {
 
-    foreach (Instance::getInstance()->getRegistry()->getFunctions() as $function) {
-      $code = "
+    foreach (Instance::getInstance()->getFunctionRegistry()->getFunctions() as $function) {
+      $code = /** @lang InjectablePHP */ "
       namespace {$namespace} {
         if(!function_exists('\\$namespace\\$function')) {
           function {$function}() {
-            if(\$__fn__ = \AspectOverride\Facades\Instance::getInstance()->getRegistry()->getForFunction('$function')) {
+            if(\$__fn__ = \AspectOverride\Facades\Instance::getForFunction('$function')) {
               return \$__fn__(...func_get_args());
             }
           }

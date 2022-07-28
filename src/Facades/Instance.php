@@ -32,6 +32,31 @@ class Instance
         return self::$instance;
     }
 
+    public static function getForFunction(string $fn): ?callable {
+        return self::getInstance()->getFunctionRegistry()->get($fn);
+    }
+
+    public static function getOverwriteForClass(string $class, string $method): ?callable {
+        return self::getInstance()->getClassOverwriteRegistry()->get($class, $method);
+    }
+
+    public static function wrapArguments(string $class, string $method, ...$args): array {
+        $before = self::getInstance()->getClassBeforeRegistry()->get($class, $method);
+        if($before) {
+            $args = $before(...$args);
+        }
+        return $args;
+    }
+
+    /** @return mixed */
+    public static function wrapReturn(string $class, string $method, $value) {
+        $after = self::getInstance()->getClassAfterRegistry()->get($class, $method);
+        if($after) {
+            $value = $after($value);
+        }
+        return $value;
+    }
+
     public static function initialize(Configuration $configuration): void
     {
         self::$instance = new CoreInstance($configuration);

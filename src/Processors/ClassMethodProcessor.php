@@ -6,13 +6,20 @@ class ClassMethodProcessor extends AbstractProcessor
 {
     public const NAME = 'aspect_mock_method_override';
 
-    private const PATTERN = '/(private|protected|public)?(\s+function\s+\S*\([\s\S]*?\)(\s*:.+?\s*)?)(\s*{)/';
+    private const BEFORE_PATTERN = '/(private|protected|public)?(\s+function\s+\S*)\(([\s\S]*?)\)((\s*:.+?\s*)?)(\s*{)/';
 
-    private const METHOD_OVERRIDE = 'if' .
-        '($__fn__ = \AspectOverride\Facades\Instance::getInstance()->getRegistry()->getForClass(__CLASS__, __FUNCTION__))' .
-        '{ %s }';
+    private const METHOD_OVERRIDE_INDEX = 3;
 
-    private const METHOD_RETURN_INDEX = 3;
+    private const AFTER_PATTERN = '/(return)(\s.+?)(;)/';
+
+    private const METHOD_OVERRIDE = /** @lang InjectablePHP */
+        'if($__fn__ = \AspectOverride\Facades\Instance::getOverwriteForClass(__CLASS__, __FUNCTION__)) { %s }';
+
+    private const METHOD_ARGUMENTS_OVERRIDE = /** @lang InjectablePHP */
+        'if($_fn__args = \AspectOverride\Facades\Instance::wrapArguments(__CLASS__, __FUNCTION__, func_get_args())) { extract($_fn__args); }';
+
+    private const METHOD_AFTER_OVERRIDE = /** @lang InjectablePHP */
+        '\AspectOverride\Facades\Instance::wrapReturn(__CLASS__, __FUNCTION__, %s)';
 
     /**
      * 
@@ -23,18 +30,33 @@ class ClassMethodProcessor extends AbstractProcessor
      */
     public function transform(string $data): string
     {
-        // Awkward way to place the override function at the start of the function
-        // Using regex substitutions to place the interception
-        $transformed = preg_replace_callback(self::PATTERN, function ($m) {
-            $returnType = $m[self::METHOD_RETURN_INDEX] ?? null;
+        // After has to come first or else we end up writing over the 'before' transformation
+        return $this->beforeTransform($this->afterTransform($data));
+    }
+
+    protected function beforeTransform(string $data): string {
+        $overwriteTransform = preg_replace_callback(self::BEFORE_PATTERN, function ($m) {
+            // Method Overwrite
+            $returnType = $m[self::METHOD_OVERRIDE_INDEX] ?? null;
             $return = $returnType && (strpos($returnType, 'void') !== false) ? '$__fn__(...func_get_args()); return;' : 'return $__fn__(...func_get_args());';
-            $template = sprintf(self::METHOD_OVERRIDE, $return);
+            $overwrite = sprintf(self::METHOD_OVERRIDE, $return);
             // We want our injection to be after the matches
-            return $m[0] . $template;
-        }, $data, -1, $count, PREG_SET_ORDER);
-        if(!$transformed) {
-            throw new \RuntimeException("General failure in transforming php code");
-        }
-        return $transformed;
+            return $m[0] . self::METHOD_ARGUMENTS_OVERRIDE . ' ' . $overwrite;
+        }, $data);
+        if(!$overwriteTransform) $this->failedTransform();
+        return $overwriteTransform;
+    }
+
+    protected function afterTransform(string $data): string {
+        $afterTransform = preg_replace_callback(self::AFTER_PATTERN, function($m) {
+            // Return (After Code) ;
+            return $m[1] . ' ' . sprintf(self::METHOD_AFTER_OVERRIDE, $m[2]) . $m[3];
+        }, $data);
+        if(!$afterTransform) $this->failedTransform();
+        return $afterTransform;
+    }
+
+    private function failedTransform() {
+        throw new \RuntimeException("General failure in transforming php code");
     }
 }
