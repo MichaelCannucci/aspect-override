@@ -56,6 +56,8 @@ class ClassMethodProcessor extends AbstractProcessor
 
     protected function afterTransform(string $data): string {
         $afterTransform = preg_replace_callback(self::AFTER_PATTERN, function($m) {
+            // condition regex has entries for other pattern as blank strings, filtering it to 'normalize' it
+            $m = array_values(array_filter($m));
             // Return (After Code) ;
             return $m[1] . ' ' . sprintf(self::METHOD_AFTER_OVERRIDE, $m[2]) . $m[3];
         }, $data);
