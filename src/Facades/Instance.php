@@ -40,12 +40,20 @@ class Instance
         return self::getInstance()->getClassOverwriteRegistry()->get($class, $method);
     }
 
-    public static function wrapArguments(string $class, string $method, ...$args): array {
+    public static function wrapArguments(string $class, string $method, array $argNames, ...$args): ?array {
         $before = self::getInstance()->getClassBeforeRegistry()->get($class, $method);
+        $isList = static function(array $array) {
+            $keys = array_keys($array);
+            return array_keys($keys) === $keys;
+        };
         if($before) {
-            $args = $before(...$args);
+            $results = $before(...$args);
+            if($isList($results)) {
+                return array_combine($argNames, $results);
+            }
+            return $results;
         }
-        return $args;
+        return null;
     }
 
     /** @return mixed */

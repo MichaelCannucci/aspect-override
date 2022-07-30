@@ -8,6 +8,8 @@ class ClassMethodProcessor extends AbstractProcessor
 
     private const BEFORE_PATTERN = '/(private|protected|public)?(\s+function\s+\S*)\(([\s\S]*?)\)((\s*:.+?\s*)?)(\s*{)/';
 
+    private const METHOD_ARGUMENTS_INDEX = 3;
+
     private const METHOD_RETURN_TYPE = 4;
 
     private const AFTER_PATTERN = '/(return)(\s.+?)(;)/';
@@ -16,7 +18,7 @@ class ClassMethodProcessor extends AbstractProcessor
         'if($__fn__ = \AspectOverride\Facades\Instance::getOverwriteForClass(__CLASS__, __FUNCTION__)) { %s }';
 
     private const METHOD_ARGUMENTS_OVERRIDE = /** @lang InjectablePHP */
-        'if($_fn__args = \AspectOverride\Facades\Instance::wrapArguments(__CLASS__, __FUNCTION__, func_get_args())) { extract($_fn__args); }';
+        'if($_fn__args = \AspectOverride\Facades\Instance::wrapArguments(__CLASS__, __FUNCTION__, %s, ...func_get_args())) { extract($_fn__args); }';
 
     private const METHOD_AFTER_OVERRIDE = /** @lang InjectablePHP */
         '\AspectOverride\Facades\Instance::wrapReturn(__CLASS__, __FUNCTION__, %s)';
@@ -36,12 +38,17 @@ class ClassMethodProcessor extends AbstractProcessor
 
     protected function beforeTransform(string $data): string {
         $overwriteTransform = preg_replace_callback(self::BEFORE_PATTERN, function ($m) {
+            // Arguments Overwrite
+            $arguments = $m[self::METHOD_ARGUMENTS_INDEX];
+            preg_match_all('/\$(.+?),?/', $arguments, $matches);
+            $arguments = array_map(function($x) {return $x; } ,$matches[1]);
+            $argumentOverwrite = sprintf(self::METHOD_ARGUMENTS_OVERRIDE, "['" . implode("','", $arguments) . "']");
             // Method Overwrite
             $returnType = $m[self::METHOD_RETURN_TYPE] ?? null;
             $return = $returnType && (strpos($returnType, 'void') !== false) ? '$__fn__(...func_get_args()); return;' : 'return $__fn__(...func_get_args());';
             $overwrite = sprintf(self::METHOD_OVERRIDE, $return);
             // We want our injection to be after the matches
-            return $m[0] . self::METHOD_ARGUMENTS_OVERRIDE . ' ' . $overwrite;
+            return $m[0] . $argumentOverwrite . ' ' . $overwrite;
         }, $data);
         if(!$overwriteTransform) $this->failedTransform();
         return $overwriteTransform;
