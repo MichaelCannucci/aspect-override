@@ -24,7 +24,7 @@ class Override
     /**
      * Modify a methods arguments before the method runs
      * @psalm-param class-string $class
-     * @return callable:array callable which match the arguments of the function and the returned array is the arguments to be used instead
+     * @return callable():array callable which match the arguments of the function and the returned array is the arguments to be used instead
      * @return callable Function to unregister the override
      */
     public static function beforeMethod(string $class, string $method, callable $override): callable
@@ -32,6 +32,20 @@ class Override
         Instance::getInstance()->getClassBeforeRegistry()->set($class, $method, $override);
         return function () use ($class, $method) {
             Instance::getInstance()->getClassBeforeRegistry()->remove($class, $method);
+        };
+    }
+
+    /**
+     * Modify a methods return after function runs
+     * @psalm-param class-string $class
+     * @return callable(mixed):mixed callable which has an argument for the functions return and return the modified return
+     * @return callable Function to unregister the override
+     */
+    public static function afterMethod(string $class, string $method, callable $override): callable
+    {
+        Instance::getInstance()->getClassAfterRegistry()->set($class, $method, $override);
+        return function () use ($class, $method) {
+            Instance::getInstance()->getClassAfterRegistry()->remove($class, $method);
         };
     }
 
