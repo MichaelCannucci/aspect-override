@@ -12,7 +12,7 @@ class ClassMethodProcessor extends AbstractProcessor
 
     private const METHOD_RETURN_TYPE = 4;
 
-    private const AFTER_PATTERN = '/(return)(\s.+?)(;)/';
+    private const AFTER_PATTERN = '/(return )(.+})(;)|(return)(\s.+?)(;)/s';
 
     private const METHOD_OVERRIDE = /** @lang InjectablePHP */
         'if($__fn__ = \AspectOverride\Facades\Instance::getOverwriteForClass(__CLASS__, __FUNCTION__)) { %s }';

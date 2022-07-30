@@ -23,7 +23,7 @@ it('can overwrite function return', function() {
 it('can mutate function return', function() {
     sandbox(
         static function() {
-            Override::afterMethod("Test", "getMutatableObject", function($obj) {
+            Override::afterMethod("Test", "getMutatableObject", function(MutableObject $obj) {
                 $obj->a = 3;
                 return $obj;
             });
@@ -42,6 +42,28 @@ it('can mutate function return', function() {
                 }
             }
             echo (new Test)->getMutatableObject()->a;
+        }
+    )->toBe(3);
+});
+
+it('can return a different anonymous function', function() {
+    sandbox(
+        static function() {
+            Override::afterMethod("Test", "returnFunction", function(callable $a) {
+                return function() use ($a) {
+                    return $a() + 1;
+                };
+            });
+        },
+        static function() {
+            class Test {
+                public function returnFunction() {
+                    return function() {
+                        return 2;
+                    };
+                }
+            }
+            echo (new Test)->returnFunction()();
         }
     )->toBe(3);
 });
