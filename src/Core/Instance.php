@@ -69,4 +69,12 @@ class Instance
     {
         return $this->functionRegistry;
     }
+
+    public function resetRegistry(): self {
+        $this->classOverwriteRegistry->reset();
+        $this->classBeforeRegistry->reset();
+        $this->classAfterRegistry->reset();
+        $this->functionRegistry->reset();
+        return $this;
+    }
 }
