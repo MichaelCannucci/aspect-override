@@ -37,8 +37,13 @@
 
 use Tests\Support\SandboxHelper;
 
-function sandbox(Closure $setup, Closure $injected) {
-    $injectedPath = SandboxHelper::getCode($injected, true);
+/**
+ * @param Closure|string $injected
+ */
+function sandbox(Closure $setup, $injected) {
+    $injectedPath = is_string($injected) ?
+        SandboxHelper::tempFile($injected) :
+        SandboxHelper::getCode($injected, true);
     $runnerPath = SandboxHelper::generateRunner($setup, $injectedPath);
     $command = implode(' ', [PHP_BINARY, $runnerPath]);
     $result = shell_exec($command);
