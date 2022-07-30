@@ -79,3 +79,22 @@ it("can overwrite method in nested namespace", function() {
         "
     )->toBe(3);
 });
+
+it("can not overwrite reference variables of function", function() {
+    sandbox(
+        static function() {
+            Override::function('array_shift', function(array &$array) {
+                $array = [1,2,3];
+                return 3;
+            });
+        },
+        /** @lang PHP */ "<?php
+        namespace test;
+        \$array = [3,4,5];
+        echo array_shift(\$array);
+        foreach (\$array as \$item) {
+            echo \$item;
+        }
+        "
+    )->toBe(3345);
+});
