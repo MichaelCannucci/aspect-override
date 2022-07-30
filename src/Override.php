@@ -3,7 +3,6 @@
 namespace AspectOverride;
 
 use AspectOverride\Facades\Instance;
-use AspectOverride\Facades\Registry;
 
 class Override
 {
@@ -30,9 +29,9 @@ class Override
      */
     public static function function(string $fn, callable $override): callable
     {
-        Instance::getInstance()->getClassOverwriteRegistry()->setForFunction($fn, $override);
+        Instance::getInstance()->getFunctionRegistry()->set($fn, $override);
         return function () use ($fn) {
-            Instance::getInstance()->getClassOverwriteRegistry()->removeForFunction($fn);
+            Instance::getInstance()->getFunctionRegistry()->remove($fn);
         };
     }
 
@@ -43,7 +42,7 @@ class Override
      */
     public static function reserve(string $fn): void
     {
-        Instance::getInstance()->getClassOverwriteRegistry()->setForFunction($fn, function () {
+        Instance::getInstance()->getFunctionRegistry()->set($fn, function () {
         });
     }
 
@@ -53,6 +52,6 @@ class Override
      */
     public static function reset(): void
     {
-        Instance::getInstance()->getClassOverwriteRegistry()->reset();
+        Instance::getInstance()->resetRegistry();
     }
 }
