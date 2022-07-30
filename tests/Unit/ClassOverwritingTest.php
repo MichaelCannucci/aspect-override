@@ -4,7 +4,7 @@ namespace Tests\Integration;
 
 use AspectOverride\Override;
 
-it('can_overwrite_public_functions', function() {
+it('can overwrite public functions', function() {
     sandbox(
         static function() {
             Override::method("Test", "returnTwo", function() {
@@ -22,7 +22,7 @@ it('can_overwrite_public_functions', function() {
     )->toBe(3);
 });
 
-it('can_overwrite_private_functions', function() {
+it('can overwrite private functions', function() {
     sandbox(
         static function() {
             Override::method("Test", "returnTwo", function() {
@@ -43,7 +43,7 @@ it('can_overwrite_private_functions', function() {
     )->toBe(3);
 });
 
-it('can_overwrite_void_return_functions', function() {
+it('can overwrite void return functions', function() {
     sandbox(
         static function() {
             Override::method("Test", 'voidReturn', function () {
@@ -62,7 +62,7 @@ it('can_overwrite_void_return_functions', function() {
     )->toBe("void!");
 });
 
-it('can_overwrite_protected_function', function() {
+it('can overwrite protected function', function() {
     sandbox(
         static function() {
             Override::method("Test", "returnTwo", function() {
@@ -83,7 +83,7 @@ it('can_overwrite_protected_function', function() {
     )->toBe(3);
 });
 
-it('can_overwrite_static_function', function() {
+it('can overwrite static function', function() {
     sandbox(
         static function() {
             Override::method("Test", "returnTwo", function() {
@@ -101,7 +101,7 @@ it('can_overwrite_static_function', function() {
     )->toBe(3);
 });
 
-it('can_overwrite_function_with_no_whitespace_in_body', function() {
+it('can overwrite function with no whitespace in body', function() {
     sandbox(
         static function() {
             Override::method("Test", "noWhitespace", function() {
@@ -118,7 +118,7 @@ it('can_overwrite_function_with_no_whitespace_in_body', function() {
     )->toBe(3);
 });
 
-it('can_overwrite_empty_function', function() {
+it('can overwrite empty function', function() {
     sandbox(
         static function() {
             Override::method("Test", "empty", function() {
@@ -137,7 +137,7 @@ it('can_overwrite_empty_function', function() {
     )->toBe(3);
 });
 
-it('can_overwrite_abstract_function', function() {
+it('can overwrite abstract function', function() {
     sandbox(
         static function() {
             Override::method("AbstractClassImplementation", "returnTwo", function() {
