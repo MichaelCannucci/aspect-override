@@ -134,7 +134,7 @@ and rewrites the code by using pattern matching and lots a trickery with eval
 
 **A:** I wish all the codebases I work on are testable 😈
 ##
-**Q:** Can I modify pass by reference in function and methods?
+**Q:** Can I modify pass by reference in functions and methods?
 
 **A:** Yup!
 
