@@ -127,7 +127,7 @@ time() // 1000;
 **Q:** How does this work, I thought you can't redefine method and function in PHP?
 
 **A:** When a file is loaded in PHP it passes through PHP's [streams](https://www.php.net/manual/en/intro.stream.php)
-and rewrites the code by using pattern matching and lots a trickery with eval
+and since PHP supports wrappers around streams we can rewrite the code before PHP executes it 
 
 ##
 **Q:** This library is really weird and I hate it, why don't you test code normally?
@@ -137,6 +137,12 @@ and rewrites the code by using pattern matching and lots a trickery with eval
 **Q:** Can I modify pass by reference in functions and methods?
 
 **A:** Yup!
+##
+**Q:** Why don't line numbers match or step over requires multiple clicks up when step debugging 
+
+**A:** Since we're rewriting the source code to rewrite methods and functions. statements get inserted 
+to return early with another value, replace arguments and or call and return the result of 'rewritten' function.
+This seemed to be better than having to step debug overwritten code (If possible)
 
 ## Versioning
 
