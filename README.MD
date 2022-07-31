@@ -2,7 +2,22 @@
 
 Override methods (Through an aspect oriented approach) and functions within your PHP tests
 
-Note: This library is only intended to be used in your testing environment
+**Note**: This library is only intended to be used in your testing environment and has no guarantees of stability in production environments
+
+## About
+
+This library aims to be the 'swiss army knife' of being able to test any PHP project by allowing you to modify the 
+execution of the program however you wish.
+
+
+## Features
+
+- Overwrite any type of class method static or non-static
+- Overwrite the functionality of any function whether it's namespaced or global
+- Overwrite the arguments of a function before it's called
+- Overwrite the return of a function after it's called
+- Modify function arguments even if they are passed by reference
+- Framework and autoloader agnostic, works with any PHP codebase (ex: Composer, regular require path/to/my/code.php)
 
 ## Getting Started
 
@@ -127,16 +142,12 @@ time() // 1000;
 **Q:** How does this work, I thought you can't redefine method and function in PHP?
 
 **A:** When a file is loaded in PHP it passes through PHP's [streams](https://www.php.net/manual/en/intro.stream.php)
-and since PHP supports wrappers around streams we can rewrite the code before PHP executes it 
+and since PHP supports wrappers around streams we can rewrite the code to include the overwrite functionality before PHP executes it 
 
 ##
 **Q:** This library is really weird and I hate it, why don't you test code normally?
 
 **A:** I wish all the codebases I work on are testable 😈
-##
-**Q:** Can I modify pass by reference in functions and methods?
-
-**A:** Yup!
 ##
 **Q:** Why don't line numbers match or step over requires multiple clicks up when step debugging 
 
