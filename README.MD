@@ -1,6 +1,8 @@
 # Aspect Override
 
-Override methods (Through an aspect oriented approach) and global functions within your PHP tests
+Override methods (Through an aspect oriented approach) and functions within your PHP tests
+
+Note: This library is only intended to be used in your testing environment
 
 ## Getting Started
 
@@ -10,8 +12,9 @@ Override methods (Through an aspect oriented approach) and global functions with
 composer require --dev mcannucci/aspect-override
 ```
 
-### Bootstraping
-Include this within your test runner's bootstrap file
+## Bootstrapping
+To enable overwriting function and class method, AspectOverride needs to initialize some stream processors
+to perform the code transformations that enable the class method and function rewriting
 ```php
 <?php
 
@@ -28,19 +31,112 @@ AspectOverride\Facades\Instance::initialize(
 );
 ```
 
-### Usage
+## Usage
+### Overwriting class methods
 ```php
 use AspectOverride\Override;
 
-// for any instances of 'MyClass', return true for the method 'myMethod'
-Override::method(MyClass::class|'\App\MyClass', 'myMethod', function(){
+class MyClass {
+   public function myMethod() {
+      return false;
+   }
+   public static function myStaticMethod() {
+      return false;
+   }
+}
+
+// for any instance of 'MyClass', return true for the method 'myMethod' and 'myStaticMethod' instead of false
+Override::method(MyClass::class, 'myMethod', function(){
   return true;
 });
-// for any invocation of the global method 'time' return 10
-Override::function('time', function(){
-  return 10;
-})
+
+Override::method(MyClass::class, 'myStaticMethod', function(){
+  return true;
+});
+
+// Will work if it's a static or instantiated method
+MyClass::myStaticMethod() // true;
+(new MyClass)->myMethod(); // true;
 ```
+### Overwriting class methods arguments before running
+```php
+use AspectOverride\Override;
+
+class MyClass {
+   public static function echoThis(int $a) {
+      echo $a;
+   }
+}
+
+// Before the function 'echoThis' runs we change $a to be incremented
+Override::method(MyClass::class, 'echoThis', function(int $a){
+  return [$a + 1]
+});
+
+MyClass::echoThis(2) // 3;
+```
+
+### Overwriting specific class methods arguments before running
+```php
+use AspectOverride\Override;
+
+class MyClass {
+   public static function echoSecondArg(int $a, int $b) {
+      echo $b;
+   }
+}
+
+// Before the function 'echoSecondArg' runs we only modify the second argument and keep the first one as is
+Override::beforeMethod(MyClass::class, 'echoSecondArg', function(int $a, int $b){
+  return ['b' => $b + 1]
+});
+
+MyClass::echoSecondArg(2,3) // 4;
+```
+
+### Overwriting a method's return value
+```php
+use AspectOverride\Override;
+
+class MyClass {
+   public static function echoOne() {
+      echo 1;
+   }
+}
+
+// After the function 'echoOne' runs, we increment the result by one 
+Override::afterMethod(MyClass::class, 'echoOne', function($a){
+  return $a + 1;
+});
+
+MyClass::echoOne() // 2;
+```
+
+### Overwriting a function's return value
+```php
+use AspectOverride\Override;
+
+Override::function('time', function(){
+  return 1000;
+});
+
+time() // 1000;
+```
+
+## Questions you might have
+**Q:** How does this work, I thought you can't redefine method and function in PHP?
+
+**A:** When a file is loaded in PHP it passes through PHP's [streams](https://www.php.net/manual/en/intro.stream.php)
+and rewrites the code by using pattern matching and lots a trickery with eval
+
+##
+**Q:** This library is really weird and I hate it, why don't you test code normally?
+
+**A:** I wish all the codebases I work on are testable 😈
+##
+**Q:** Can I modify pass by reference in function and methods?
+
+**A:** Yup!
 
 ## Versioning
 
@@ -52,5 +148,5 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Acknowledgements
 
-Functionality Heavily inspired by [AspectMock](https://github.com/Codeception/AspectMock)
+Functionality Heavily inspired by [AspectMock](https://github.com/Codeception/AspectMock) and
 Heavily Inspired by [php-vcr](https://github.com/php-vcr/php-vcr) for monkey-patching through PHP streams

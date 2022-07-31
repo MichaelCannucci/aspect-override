@@ -7,8 +7,7 @@ use AspectOverride\Facades\Instance;
 class Override
 {
     /**
-     * Override a class's method
-     * ex: MyClass::run will now echo 'Works!'
+     * Override a method's implementation with the provided callable
      * @psalm-param class-string $class
      * @param callable $override callable which match the arguments of the function and returns a value
      * @return callable Function to unregister the override
@@ -50,8 +49,7 @@ class Override
     }
 
     /**
-     * Override a global function's execution
-     * ex: time() should return 10
+     * Override a function's execution
      * @param string $fn
      * @param callable $override
      * @return callable Function to unregister the override
