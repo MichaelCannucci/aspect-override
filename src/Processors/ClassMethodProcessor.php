@@ -68,4 +68,8 @@ class ClassMethodProcessor extends AbstractProcessor
     private function failedTransform() {
         throw new \RuntimeException("General failure in transforming php code");
     }
+
+    public function onNewFile(): void {
+
+    }
 }

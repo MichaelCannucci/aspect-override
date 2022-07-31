@@ -80,7 +80,7 @@ it("can overwrite method in nested namespace", function() {
     )->toBe(3);
 });
 
-it("can not overwrite reference variables of function", function() {
+it("can overwrite reference variables of function", function() {
     sandbox(
         static function() {
             Override::function('array_shift', function(array &$array) {
@@ -96,5 +96,5 @@ it("can not overwrite reference variables of function", function() {
             echo \$item;
         }
         "
-    )->toBe(3345);
+    )->toBe(3123);
 });

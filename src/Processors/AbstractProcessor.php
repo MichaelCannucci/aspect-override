@@ -24,6 +24,7 @@ abstract class AbstractProcessor extends \php_user_filter
      */
     public function filter($in, $out, &$consumed, $closing): int
     {
+        $this->onNewFile();
         while ($bucket = stream_bucket_make_writeable($in)) {
             /** @var \stdClass $bucket */
             $bucket->data = $this->transform($this->removeComments($bucket->data));
@@ -47,10 +48,14 @@ abstract class AbstractProcessor extends \php_user_filter
         }
     }
 
+    /**
+     * Comments might be picked up the code transformers and produce invalid results
+     */
     private function removeComments(string $data): string {
-        // comments might be picked up by the code transformations
-        return preg_replace('/\/\/.+/', '//', $data);
+        return preg_replace('/(\/\/|#).+/', '//', $data);
     }
 
     public abstract function transform(string $data): string;
+
+    public abstract function onNewFile(): void;
 }
