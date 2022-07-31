@@ -22,7 +22,7 @@
         "pestphp/pest": "^1.21"
     },
     "scripts": {
-        "test": "vendor/bin/phpunit",
+        "test": "vendor/bin/pest",
         "check": "vendor/bin/phpstan -l8 analyse src/",
         "coverage": "vendor/bin/phpunit --coverage-html html",
         "cs-fixer": "tools/php-cs-fixer/vendor/bin/php-cs-fixer fix"
