@@ -53,7 +53,7 @@ class SandboxHelper
         } catch (\ReflectionException $e) { throw new \RuntimeException($e->getMessage());}
     }
     public static function tempFile(string $code): string {
-        $tmp = $_ENV['TEST_RUNNER_TMP'] ?: sys_get_temp_dir();
+        $tmp = $_ENV['TEST_RUNNER_TMP'] ?? sys_get_temp_dir();
         $path = $tmp . "/" . md5($code) . '.php';
         $return = file_put_contents($path, $code);
         if(false === $return) {
