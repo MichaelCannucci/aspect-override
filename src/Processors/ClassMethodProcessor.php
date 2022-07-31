@@ -53,7 +53,7 @@ class ClassMethodProcessor extends AbstractProcessor {
         if (!$overwriteTransform) {
             $this->failedTransform();
         }
-        return $overwriteTransform;
+        return (string)$overwriteTransform;
     }
 
     protected function afterTransform(string $data): string {
@@ -66,10 +66,10 @@ class ClassMethodProcessor extends AbstractProcessor {
         if (!$afterTransform) {
             $this->failedTransform();
         }
-        return $afterTransform;
+        return (string)$afterTransform;
     }
 
-    private function failedTransform() {
+    private function failedTransform(): void {
         throw new \RuntimeException("General failure in transforming php code");
     }
 

@@ -26,7 +26,7 @@ class FunctionProcessor extends AbstractProcessor {
         if ($found) {
             $this->namespaces = $found[1];
         }
-        return preg_replace_callback(self::PATTERN, function ($m) {
+        return (string)preg_replace_callback(self::PATTERN, function ($m) {
             $function = $m[3];
             if (!array_key_exists($function, self::DENY_LIST)) {
                 $function = $this->loadPatchedFunction($m[3]);
@@ -58,6 +58,9 @@ class FunctionProcessor extends AbstractProcessor {
         return $uniqueName;
     }
 
+    /**
+     * @return array{0:string,1:string}
+     */
     public function getOriginalParameters(string $namespace, string $name): array {
         try {
             $namespaced = $namespace . '\\' . $name;
@@ -81,13 +84,13 @@ class FunctionProcessor extends AbstractProcessor {
     /**
      * @throws \ReflectionException
      */
-    private function getDefaultForCode(\ReflectionParameter $parameter) {
+    private function getDefaultForCode(\ReflectionParameter $parameter): string {
         $default = $parameter->getDefaultValue();
         if (is_string($default)) {
             return "'$default'";
         } elseif (null === $default) {
             return 'null';
         }
-        return $default;
+        return (string)$default;
     }
 }

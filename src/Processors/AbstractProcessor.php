@@ -49,7 +49,7 @@ abstract class AbstractProcessor extends \php_user_filter {
      * Comments might be picked up the code transformers and produce invalid results
      */
     private function removeComments(string $data): string {
-        return preg_replace('/(\/\/|#).+/', '//', $data);
+        return (string)preg_replace('/(\/\/|#).+/', '//', $data);
     }
 
     abstract public function transform(string $data): string;

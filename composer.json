@@ -24,7 +24,8 @@
     "scripts": {
         "test": "vendor/bin/phpunit",
         "check": "vendor/bin/phpstan -l8 analyse src/",
-        "coverage": "vendor/bin/phpunit --coverage-html html"
+        "coverage": "vendor/bin/phpunit --coverage-html html",
+        "cs-fixer": "tools/php-cs-fixer/vendor/bin/php-cs-fixer fix"
     },
     "config": {
         "allow-plugins": {
