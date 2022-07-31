@@ -37,3 +37,24 @@ it('can overwrite specific function arguments', function() {
         }
     )->toBe(3);
 });
+
+it('respects pass by ref', function() {
+    sandbox(
+        static function() {
+            Override::beforeMethod("Test", 'doThingToRef', function($a) {
+                // Since 'extract' is what sets the variables, we don't have to modify the reference ourselves
+                return [3];
+            });
+        },
+        static function() {
+            class Test {
+                public function doThingToRef(&$a) {
+                    $a = 2;
+                }
+            }
+            $a = 1;
+            (new Test)->doThingToRef($a);
+            echo $a;
+        }
+    )->toBe(2);
+});
