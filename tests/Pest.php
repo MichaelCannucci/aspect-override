@@ -47,7 +47,7 @@ function sandbox(Closure $setup, $injected) {
     $runnerPath = SandboxHelper::generateRunner($setup, $injectedPath);
     $command = implode(' ', [PHP_BINARY, $runnerPath]);
     $result = shell_exec($command);
-    if(is_numeric($result)) {
+    if (is_numeric($result)) {
         $result = (int)$result;
     }
     return expect($result);

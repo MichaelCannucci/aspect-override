@@ -1,6 +1,5 @@
 <?php
 
-
 namespace AspectOverride\Facades;
 
 use AspectOverride\Core\Configuration;
@@ -9,8 +8,7 @@ use AspectOverride\Core\Instance as CoreInstance;
 /**
  * @method static Configuration getConfiguration()
  */
-class Instance
-{
+class Instance {
     /** @var \AspectOverride\Core\Instance|null */
     public static $instance = null;
 
@@ -19,13 +17,11 @@ class Instance
      * @param mixed $arguments
      * @return mixed
      */
-    public static function __callStatic($name, $arguments)
-    {
+    public static function __callStatic($name, $arguments) {
         return self::getInstance()->$name(...$arguments);
     }
 
-    public static function getInstance(): CoreInstance
-    {
+    public static function getInstance(): CoreInstance {
         if (!self::$instance) {
             throw new \RuntimeException("aspect-override has not been initalized, call AspectOverride\Facades\Instance::initialize()");
         }
@@ -42,13 +38,13 @@ class Instance
 
     public static function wrapArguments(string $class, string $method, array $argNames, ...$args): ?array {
         $before = self::getInstance()->getClassBeforeRegistry()->get($class, $method);
-        $isList = static function(array $array) {
+        $isList = static function (array $array) {
             $keys = array_keys($array);
             return array_keys($keys) === $keys;
         };
-        if($before) {
+        if ($before) {
             $results = $before(...$args);
-            if($isList($results)) {
+            if ($isList($results)) {
                 return array_combine($argNames, $results);
             }
             return $results;
@@ -59,14 +55,13 @@ class Instance
     /** @return mixed */
     public static function wrapReturn(string $class, string $method, $value) {
         $after = self::getInstance()->getClassAfterRegistry()->get($class, $method);
-        if($after) {
+        if ($after) {
             $value = $after($value);
         }
         return $value;
     }
 
-    public static function initialize(Configuration $configuration): void
-    {
+    public static function initialize(Configuration $configuration): void {
         self::$instance = new CoreInstance($configuration);
         self::$instance->reset();
         self::$instance->start();

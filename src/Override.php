@@ -4,16 +4,14 @@ namespace AspectOverride;
 
 use AspectOverride\Facades\Instance;
 
-class Override
-{
+class Override {
     /**
      * Override a method's implementation with the provided callable
      * @psalm-param class-string $class
      * @param callable $override callable which match the arguments of the function and returns a value
      * @return callable Function to unregister the override
      */
-    public static function method(string $class, string $method, callable $override): callable
-    {
+    public static function method(string $class, string $method, callable $override): callable {
         Instance::getInstance()->getClassOverwriteRegistry()->set($class, $method, $override);
         return function () use ($class, $method) {
             Instance::getInstance()->getClassOverwriteRegistry()->remove($class, $method);
@@ -26,8 +24,7 @@ class Override
      * @return callable():array callable which match the arguments of the function and the returned array is the arguments to be used instead
      * @return callable Function to unregister the override
      */
-    public static function beforeMethod(string $class, string $method, callable $override): callable
-    {
+    public static function beforeMethod(string $class, string $method, callable $override): callable {
         Instance::getInstance()->getClassBeforeRegistry()->set($class, $method, $override);
         return function () use ($class, $method) {
             Instance::getInstance()->getClassBeforeRegistry()->remove($class, $method);
@@ -40,8 +37,7 @@ class Override
      * @return callable(mixed):mixed callable which has an argument for the functions return and return the modified return
      * @return callable Function to unregister the override
      */
-    public static function afterMethod(string $class, string $method, callable $override): callable
-    {
+    public static function afterMethod(string $class, string $method, callable $override): callable {
         Instance::getInstance()->getClassAfterRegistry()->set($class, $method, $override);
         return function () use ($class, $method) {
             Instance::getInstance()->getClassAfterRegistry()->remove($class, $method);
@@ -54,8 +50,7 @@ class Override
      * @param callable $override
      * @return callable Function to unregister the override
      */
-    public static function function(string $fn, callable $override): callable
-    {
+    public static function function(string $fn, callable $override): callable {
         Instance::getInstance()->getFunctionRegistry()->set($fn, $override);
         return function () use ($fn) {
             Instance::getInstance()->getFunctionRegistry()->remove($fn);
@@ -66,8 +61,7 @@ class Override
      * Remove all the overrides
      * @return void
      */
-    public static function reset(): void
-    {
+    public static function reset(): void {
         Instance::getInstance()->resetRegistry();
     }
 }

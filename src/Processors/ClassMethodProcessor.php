@@ -2,8 +2,7 @@
 
 namespace AspectOverride\Processors;
 
-class ClassMethodProcessor extends AbstractProcessor
-{
+class ClassMethodProcessor extends AbstractProcessor {
     public const NAME = 'aspect_mock_method_override';
 
     private const BEFORE_PATTERN = '/(private|protected|public)?(\s+function\s+\S*)\(([\s\S]*?)\)((\s*:.+?\s*)?)(\s*{)/';
@@ -24,14 +23,13 @@ class ClassMethodProcessor extends AbstractProcessor
         '\AspectOverride\Facades\Instance::wrapReturn(__CLASS__, __FUNCTION__, %s)';
 
     /**
-     * 
+     *
      * Add the injection points for the monkey-patching
-     * 
-     * @param string $data 
-     * @return string 
+     *
+     * @param string $data
+     * @return string
      */
-    public function transform(string $data): string
-    {
+    public function transform(string $data): string {
         // After has to come first or else we end up writing over the 'before' transformation
         return $this->beforeTransform($this->afterTransform($data));
     }
@@ -41,7 +39,9 @@ class ClassMethodProcessor extends AbstractProcessor
             // Arguments Overwrite
             $arguments = $m[self::METHOD_ARGUMENTS_INDEX];
             preg_match_all('/\$(.+?),?/', $arguments, $matches);
-            $arguments = array_map(function($x) {return $x; } ,$matches[1]);
+            $arguments = array_map(function ($x) {
+                return $x;
+            }, $matches[1]);
             $argumentOverwrite = sprintf(self::METHOD_ARGUMENTS_OVERRIDE, "['" . implode("','", $arguments) . "']");
             // Method Overwrite
             $returnType = $m[self::METHOD_RETURN_TYPE] ?? null;
@@ -50,18 +50,22 @@ class ClassMethodProcessor extends AbstractProcessor
             // We want our injection to be after the matches
             return $m[0] . $argumentOverwrite . ' ' . $overwrite;
         }, $data);
-        if(!$overwriteTransform) $this->failedTransform();
+        if (!$overwriteTransform) {
+            $this->failedTransform();
+        }
         return $overwriteTransform;
     }
 
     protected function afterTransform(string $data): string {
-        $afterTransform = preg_replace_callback(self::AFTER_PATTERN, function($m) {
+        $afterTransform = preg_replace_callback(self::AFTER_PATTERN, function ($m) {
             // condition regex has entries for other pattern as blank strings, filtering it to 'normalize' it
             $m = array_values(array_filter($m));
             // Return (After Code) ;
             return $m[1] . ' ' . sprintf(self::METHOD_AFTER_OVERRIDE, $m[2]) . $m[3];
         }, $data);
-        if(!$afterTransform) $this->failedTransform();
+        if (!$afterTransform) {
+            $this->failedTransform();
+        }
         return $afterTransform;
     }
 
@@ -70,6 +74,5 @@ class ClassMethodProcessor extends AbstractProcessor
     }
 
     public function onNewFile(): void {
-
     }
 }

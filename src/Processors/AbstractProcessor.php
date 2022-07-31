@@ -6,8 +6,7 @@ namespace AspectOverride\Processors;
  * Implementation heavily inspired from:
  * https://github.com/php-vcr/php-vcr/blob/master/src/VCR/CodeTransform/AbstractCodeTransform.php
  */
-abstract class AbstractProcessor extends \php_user_filter
-{
+abstract class AbstractProcessor extends \php_user_filter {
     public const NAME = 'aspect_mock_processor';
 
     /**
@@ -22,8 +21,7 @@ abstract class AbstractProcessor extends \php_user_filter
      *
      * @see http://www.php.net/manual/en/php-user-filter.filter.php
      */
-    public function filter($in, $out, &$consumed, $closing): int
-    {
+    public function filter($in, $out, &$consumed, $closing): int {
         $this->onNewFile();
         while ($bucket = stream_bucket_make_writeable($in)) {
             /** @var \stdClass $bucket */
@@ -38,8 +36,7 @@ abstract class AbstractProcessor extends \php_user_filter
     /**
      * Attaches the current filter to a stream.
      */
-    public function register(): void
-    {
+    public function register(): void {
         if (!\in_array(static::NAME, stream_get_filters(), true)) {
             $isRegistered = stream_filter_register(static::NAME, static::class);
             if (!$isRegistered) {
@@ -55,7 +52,7 @@ abstract class AbstractProcessor extends \php_user_filter
         return preg_replace('/(\/\/|#).+/', '//', $data);
     }
 
-    public abstract function transform(string $data): string;
+    abstract public function transform(string $data): string;
 
-    public abstract function onNewFile(): void;
+    abstract public function onNewFile(): void;
 }

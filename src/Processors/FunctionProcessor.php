@@ -2,8 +2,7 @@
 
 namespace AspectOverride\Processors;
 
-class FunctionProcessor extends AbstractProcessor
-{
+class FunctionProcessor extends AbstractProcessor {
     public const NAME = 'aspect_mock_function_override';
 
     public const PATTERN = '/(?<!new|function)(\s|\()(((?!function|if|else|elseif)\w+)(\(.*?\)))/m';
@@ -22,23 +21,21 @@ class FunctionProcessor extends AbstractProcessor
         $this->namespaces = [];
     }
 
-    public function transform(string $data): string
-    {
+    public function transform(string $data): string {
         preg_match_all(self::NAMESPACE_PATTERN, $data, $found);
-        if($found) {
+        if ($found) {
             $this->namespaces = $found[1];
         }
-        return preg_replace_callback(self::PATTERN, function($m) {
+        return preg_replace_callback(self::PATTERN, function ($m) {
             $function = $m[3];
-            if(!array_key_exists($function, self::DENY_LIST)) {
+            if (!array_key_exists($function, self::DENY_LIST)) {
                 $function = $this->loadPatchedFunction($m[3]);
             }
             return $m[1] . $function . $m[4];
         }, $data);
     }
 
-    public function loadPatchedFunction(string $name): string
-    {
+    public function loadPatchedFunction(string $name): string {
         $uniqueName = $name . '_' . md5($name);
         $namespaces = empty($this->namespaces) ? [''] : $this->namespaces;
         foreach ($namespaces as $namespace) {
@@ -86,7 +83,7 @@ class FunctionProcessor extends AbstractProcessor
      */
     private function getDefaultForCode(\ReflectionParameter $parameter) {
         $default = $parameter->getDefaultValue();
-        if(is_string($default)) {
+        if (is_string($default)) {
             return "'$default'";
         } elseif (null === $default) {
             return 'null';

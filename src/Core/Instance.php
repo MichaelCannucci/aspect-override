@@ -2,8 +2,7 @@
 
 namespace AspectOverride\Core;
 
-class Instance
-{
+class Instance {
     /** @var Configuration */
     protected $config;
     /** @var StreamInterceptor */
@@ -35,38 +34,31 @@ class Instance
         $this->start();
     }
 
-    public function reset(): void
-    {
+    public function reset(): void {
         $this->interceptor->restore();
     }
 
-    public function start(): void
-    {
+    public function start(): void {
         $this->interceptor->intercept();
     }
 
-    public function getConfiguration(): Configuration
-    {
+    public function getConfiguration(): Configuration {
         return $this->config;
     }
 
-    public function getClassOverwriteRegistry(): ClassRegistry
-    {
+    public function getClassOverwriteRegistry(): ClassRegistry {
         return $this->classOverwriteRegistry;
     }
 
-    public function getClassBeforeRegistry(): ClassRegistry
-    {
+    public function getClassBeforeRegistry(): ClassRegistry {
         return $this->classBeforeRegistry;
     }
 
-    public function getClassAfterRegistry(): ClassRegistry
-    {
+    public function getClassAfterRegistry(): ClassRegistry {
         return $this->classAfterRegistry;
     }
 
-    public function getFunctionRegistry(): FunctionRegistry
-    {
+    public function getFunctionRegistry(): FunctionRegistry {
         return $this->functionRegistry;
     }
 
