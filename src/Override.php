@@ -65,17 +65,6 @@ class Override
     }
 
     /**
-     * Ensure that the function is always overwritten
-     * @param string $fn function name
-     * @return void 
-     */
-    public static function reserve(string $fn): void
-    {
-        Instance::getInstance()->getFunctionRegistry()->set($fn, function () {
-        });
-    }
-
-    /**
      * Remove all the overrides
      * @return void
      */
