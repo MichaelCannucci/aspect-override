@@ -53,7 +53,8 @@ class SandboxHelper
         } catch (\ReflectionException $e) { throw new \RuntimeException($e->getMessage());}
     }
     public static function tempFile(string $code): string {
-        $path = sys_get_temp_dir() . "/" . md5($code) . '.php';
+        $tmp = $_ENV['TEST_RUNNER_TMP'] ?: sys_get_temp_dir();
+        $path = $tmp . "/" . md5($code) . '.php';
         $return = file_put_contents($path, $code);
         if(false === $return) {
             throw new \RuntimeException("Unable to create file for sandbox: $path");
