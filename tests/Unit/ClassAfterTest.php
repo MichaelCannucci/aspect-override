@@ -20,6 +20,24 @@ it('can overwrite function return', function() {
     )->toBe(3);
 });
 
+it('can overwrite final function return', function() {
+    sandbox(
+        static function() {
+            Override::afterMethod("Test", "returnTwo", function($a) {
+                return 3;
+            });
+        },
+        static function() {
+            class Test {
+                public final function returnTwo() {
+                    return 2;
+                }
+            }
+            echo (new Test)->returnTwo();
+        }
+    )->toBe(3);
+});
+
 it('can mutate function return', function() {
     sandbox(
         static function() {

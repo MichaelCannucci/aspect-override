@@ -20,6 +20,24 @@ it('can overwrite function arguments', function() {
     )->toBe(3);
 });
 
+it('can overwrite final function arguments', function() {
+    sandbox(
+        static function() {
+            Override::beforeMethod("Test", "echoArgs", function($a) {
+                return [3];
+            });
+        },
+        static function() {
+            class Test {
+                public final function echoArgs($a) {
+                    echo $a;
+                }
+            }
+            (new Test)->echoArgs(2);
+        }
+    )->toBe(3);
+});
+
 it('can overwrite specific function arguments', function() {
     sandbox(
         static function() {

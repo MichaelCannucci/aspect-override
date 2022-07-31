@@ -161,3 +161,23 @@ it('can overwrite abstract function', function() {
         }
     )->toBe(3);
 });
+
+it('can overwrite final function', function() {
+    sandbox(
+        static function() {
+            Override::method("AbstractClassImplementation", "returnTwo", function() {
+                return 3;
+            });
+        },
+        static function() {
+            class AbstractClassImplementation
+            {
+                final function returnTwo(): int {
+                    return 2;
+                }
+            }
+            /** @noinspection PhpVoidFunctionResultUsedInspection */
+            echo (new AbstractClassImplementation)->returnTwo();
+        }
+    )->toBe(3);
+});
