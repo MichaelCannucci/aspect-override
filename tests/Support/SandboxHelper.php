@@ -28,23 +28,20 @@ class SandboxHelper {
             $start = $fn->getStartLine();
             $end = $fn->getEndLine();
             $file = file_get_contents($fn->getFileName());
-            // copying namespaces from the file is hacky but it works for now :(
+            // copying namespaces from the file is hacky, but it works for now :(
             preg_match_all('/use.+/', $file, $matches);
             $namespaces = array_map(function ($m) {
                 return $m[0];
             }, $matches);
             $code = "";
-            $lineNum = 0;
-            for ($line = strtok($file, "\n"), 0; $line !== false; $line = strtok("\n")) {
-                $lineNum++;
-                if ($lineNum === $start) {
-                    $line = preg_replace('/static function\(.*\).+{/', '', $line);
-                }
-                if ($lineNum === $end) {
-                    $line = preg_replace('/}?,?/', '', $line);
-                }
-                if ($lineNum >= $start && $lineNum <= $end) {
-                    $code .= $line . "\n";
+            $lines = file($fn->getFileName());
+            for($l = $start; $l < $end; $l++) {
+                if ($l === $start) {
+                    $code .= preg_replace('/static function\(.*\).+{/', '', $lines[$l]);
+                } else if ($l === $end - 1) {
+                    $code .= preg_replace('/}?,?/', '', $lines[$l]);
+                } else {
+                    $code .= $lines[$l];
                 }
             }
             if ($stripNamespaces) {
