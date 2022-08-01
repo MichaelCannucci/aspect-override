@@ -2,21 +2,18 @@
 
 namespace AspectOverride\Core;
 
-class Configuration
-{
+class Configuration {
     /** @var string[] */
     protected $directories;
 
     /** @var string[] */
     protected $excludedDirectories;
 
-    public static function create(): self
-    {
+    public static function create(): self {
         return new self();
     }
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->directories = [];
         $this->excludedDirectories = [];
     }
@@ -37,8 +34,7 @@ class Configuration
      * @param string[] $directories
      * @return $this
      */
-    public function setDirectories(array $directories): self
-    {
+    public function setDirectories(array $directories): self {
         $this->directories = $this->normalizeDirectories($directories);
         return $this;
     }
@@ -46,8 +42,7 @@ class Configuration
     /**
      * @return string[]
      */
-    public function getDirectories(): array
-    {
+    public function getDirectories(): array {
         return $this->directories;
     }
 
@@ -55,8 +50,7 @@ class Configuration
      * @param string[] $directories
      * @return $this
      */
-    public function setExcludedDirectories(array $directories): self
-    {
+    public function setExcludedDirectories(array $directories): self {
         $this->excludedDirectories = $this->normalizeDirectories($directories);
         return $this;
     }
@@ -64,8 +58,7 @@ class Configuration
     /**
      * @return string[]
      */
-    public function getExcludedDirectories(): array
-    {
+    public function getExcludedDirectories(): array {
         return $this->excludedDirectories;
     }
 }

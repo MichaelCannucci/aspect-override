@@ -12,12 +12,11 @@ use RuntimeException;
  * Implementation adapted from:
  * https://github.com/php-vcr/php-vcr/blob/ddabff24e08b9a2be2a45f78927dc366491184d7/src/VCR/Util/StreamProcessor.php
  */
-class StreamInterceptor
-{
+class StreamInterceptor {
     /**
      * Constant for a stream which was opened while including a file.
      */
-    const STREAM_OPEN_FOR_INCLUDE = 128;
+    public const STREAM_OPEN_FOR_INCLUDE = 128;
 
     protected const PROTOCOL = 'file';
 
@@ -33,21 +32,20 @@ class StreamInterceptor
      */
     public $context;
 
-    /** 
-     * @var AbstractProcessor[] 
+    /**
+     * @var AbstractProcessor[]
      * */
     protected static $streamProcessors;
 
-    /** 
-     * @var Configuration 
+    /**
+     * @var Configuration
      * */
     protected static $configuration;
 
     /**
      * @param AbstractProcessor[] $streamProcessors
      */
-    public function __construct(Configuration $configuration = null, array $streamProcessors = null)
-    {
+    public function __construct(Configuration $configuration = null, array $streamProcessors = null) {
         if ($configuration) {
             self::$configuration = $configuration;
         }
@@ -65,8 +63,7 @@ class StreamInterceptor
         }
     }
 
-    public function intercept(): void
-    {
+    public function intercept(): void {
         ini_set('opcache.enable', '0');
         stream_wrapper_unregister(self::PROTOCOL);
         $result = stream_wrapper_register(self::PROTOCOL, __CLASS__);
@@ -75,8 +72,7 @@ class StreamInterceptor
         }
     }
 
-    public function restore(): void
-    {
+    public function restore(): void {
         stream_wrapper_unregister(self::PROTOCOL);
         stream_wrapper_restore(self::PROTOCOL);
     }
@@ -84,13 +80,11 @@ class StreamInterceptor
     /**
      * Determines that the provided uri leads to a PHP file.
      */
-    protected function isPhpFile(string $uri): bool
-    {
+    protected function isPhpFile(string $uri): bool {
         return 'php' === pathinfo($uri, PATHINFO_EXTENSION);
     }
 
-    protected function shouldProcess(string $uri): bool
-    {
+    protected function shouldProcess(string $uri): bool {
         $excludedDirectories = self::$configuration->getExcludedDirectories();
         foreach ($excludedDirectories as $excluded) {
             if ($this->isPhpFile($uri) && false !== strpos($uri, $excluded)) {
@@ -119,8 +113,7 @@ class StreamInterceptor
      *
      * @return bool returns TRUE on success or FALSE on failure
      */
-    public function stream_open(string $path, string $mode, int $options, ?string &$openedPath): bool
-    {
+    public function stream_open(string $path, string $mode, int $options, ?string &$openedPath): bool {
         try {
             // file_exists catches paths like /dev/urandom that are missed by is_file.
             if ('r' === substr($mode, 0, 1) && !file_exists($path)) {
@@ -158,8 +151,7 @@ class StreamInterceptor
      *
      * @see http://www.php.net/manual/en/streamwrapper.stream-close.php
      */
-    public function stream_close(): bool
-    {
+    public function stream_close(): bool {
         if (false === $this->resource) {
             return true;
         }
@@ -175,8 +167,7 @@ class StreamInterceptor
      * @return bool should return TRUE if the read/write position is at the end of the stream
      *              and if no more data is available to be read, or FALSE otherwise
      */
-    public function stream_eof(): bool
-    {
+    public function stream_eof(): bool {
         if (false === $this->resource) {
             return false;
         }
@@ -189,8 +180,7 @@ class StreamInterceptor
      *
      * @see http://www.php.net/manual/en/streamwrapper.stream-flush.php
      */
-    public function stream_flush(): bool
-    {
+    public function stream_flush(): bool {
         if (false === $this->resource) {
             return false;
         }
@@ -208,8 +198,7 @@ class StreamInterceptor
      * @return string|false If there are less than count bytes available, return as many as are available.
      *                      If no more data is available, return either FALSE or an empty string.
      */
-    public function stream_read(int $count)
-    {
+    public function stream_read(int $count) {
         if (false === $this->resource) {
             return false;
         }
@@ -228,8 +217,7 @@ class StreamInterceptor
      *
      * @return bool return TRUE if the position was updated, FALSE otherwise
      */
-    public function stream_seek(int $offset, int $whence = SEEK_SET): bool
-    {
+    public function stream_seek(int $offset, int $whence = SEEK_SET): bool {
         if (false === $this->resource) {
             return false;
         }
@@ -248,8 +236,7 @@ class StreamInterceptor
      *
      * @return array<int|string, int>|false see stat()
      */
-    public function stream_stat()
-    {
+    public function stream_stat() {
         if (false === $this->resource) {
             return false;
         }
@@ -270,8 +257,7 @@ class StreamInterceptor
      *
      * @return int|false should return the current position of the stream
      */
-    public function stream_tell()
-    {
+    public function stream_tell() {
         if (false === $this->resource) {
             return false;
         }
@@ -289,8 +275,7 @@ class StreamInterceptor
      *
      * @return array<int|string, int>|false should return as many elements as stat() does
      */
-    public function url_stat(string $path, int $flags)
-    {
+    public function url_stat(string $path, int $flags) {
         $this->restore();
         if ($flags & STREAM_URL_STAT_QUIET) {
             set_error_handler(function () {
@@ -314,8 +299,7 @@ class StreamInterceptor
      *
      * @return bool returns TRUE on success or FALSE on failure
      */
-    public function dir_closedir(): bool
-    {
+    public function dir_closedir(): bool {
         if (false === $this->resource) {
             return false;
         }
@@ -334,8 +318,7 @@ class StreamInterceptor
      *
      * @return bool returns TRUE on success or FALSE on failure
      */
-    public function dir_opendir(string $path): bool
-    {
+    public function dir_opendir(string $path): bool {
         $this->restore();
         if (isset($this->context)) {
             $this->resource = opendir($path, $this->context);
@@ -354,8 +337,7 @@ class StreamInterceptor
      *
      * @return mixed should return string representing the next filename, or FALSE if there is no next file
      */
-    public function dir_readdir()
-    {
+    public function dir_readdir() {
         if (false === $this->resource) {
             return false;
         }
@@ -370,8 +352,7 @@ class StreamInterceptor
      *
      * @return bool returns TRUE on success or FALSE on failure
      */
-    public function dir_rewinddir(): bool
-    {
+    public function dir_rewinddir(): bool {
         if (false === $this->resource) {
             return false;
         }
@@ -392,8 +373,7 @@ class StreamInterceptor
      *
      * @return bool returns TRUE on success or FALSE on failure
      */
-    public function mkdir(string $path, int $mode, int $options): bool
-    {
+    public function mkdir(string $path, int $mode, int $options): bool {
         $this->restore();
         if (isset($this->context)) {
             $result = mkdir($path, $mode, (bool)($options & STREAM_MKDIR_RECURSIVE), $this->context);
@@ -415,8 +395,7 @@ class StreamInterceptor
      *
      * @return bool returns TRUE on success or FALSE on failure
      */
-    public function rename(string $path_from, string $path_to): bool
-    {
+    public function rename(string $path_from, string $path_to): bool {
         $this->restore();
         if (isset($this->context)) {
             $result = rename($path_from, $path_to, $this->context);
@@ -437,8 +416,7 @@ class StreamInterceptor
      *
      * @return bool returns TRUE on success or FALSE on failure
      */
-    public function rmdir(string $path): bool
-    {
+    public function rmdir(string $path): bool {
         $this->restore();
         if (isset($this->context)) {
             $result = rmdir($path, $this->context);
@@ -460,8 +438,7 @@ class StreamInterceptor
      *
      * @return resource|false should return the underlying stream resource used by the wrapper, or FALSE
      */
-    public function stream_cast(int $cast_as)
-    {
+    public function stream_cast(int $cast_as) {
         return $this->resource;
     }
 
@@ -474,8 +451,7 @@ class StreamInterceptor
      *
      * @return bool returns TRUE on success or FALSE on failure
      */
-    public function stream_lock(int $operation): bool
-    {
+    public function stream_lock(int $operation): bool {
         if (false === $this->resource) {
             return false;
         }
@@ -497,8 +473,7 @@ class StreamInterceptor
      * @return bool Returns TRUE on success or FALSE on failure. If option is not implemented,
      *              FALSE should be returned.
      */
-    public function stream_set_option(int $option, int $arg1, int $arg2): bool
-    {
+    public function stream_set_option(int $option, int $arg1, int $arg2): bool {
         if (false === $this->resource) {
             return false;
         }
@@ -514,9 +489,9 @@ class StreamInterceptor
             case STREAM_OPTION_READ_BUFFER:
                 // stream_set_read_buffer returns 0 in case of success
                 return 0 === stream_set_read_buffer($this->resource, $arg1);
-                // STREAM_OPTION_CHUNK_SIZE does not exist at all in PHP 7
-                /*case STREAM_OPTION_CHUNK_SIZE:
-                return stream_set_chunk_size($this->resource, $arg1);*/
+            // STREAM_OPTION_CHUNK_SIZE does not exist at all in PHP 7
+            /*case STREAM_OPTION_CHUNK_SIZE:
+            return stream_set_chunk_size($this->resource, $arg1);*/
         }
 
         return false;
@@ -533,8 +508,7 @@ class StreamInterceptor
      * @see http://www.php.net/manual/en/streamwrapper.stream-write.php
      *
      */
-    public function stream_write(string $data)
-    {
+    public function stream_write(string $data) {
         if (false === $this->resource) {
             return false;
         }
@@ -551,8 +525,7 @@ class StreamInterceptor
      *
      * @return bool returns TRUE on success or FALSE on failure
      */
-    public function unlink(string $path): bool
-    {
+    public function unlink(string $path): bool {
         $this->restore();
         if (isset($this->context)) {
             $result = unlink($path, $this->context);
@@ -575,8 +548,7 @@ class StreamInterceptor
      *
      * @return bool returns TRUE on success or FALSE on failure
      */
-    public function stream_metadata(string $path, int $option, $value): bool
-    {
+    public function stream_metadata(string $path, int $option, $value): bool {
         $this->restore();
         $result = false;
 
@@ -614,8 +586,7 @@ class StreamInterceptor
      *
      * @return bool returns TRUE on success or FALSE on failure
      */
-    public function stream_truncate(int $new_size): bool
-    {
+    public function stream_truncate(int $new_size): bool {
         if (false === $this->resource) {
             return false;
         }
