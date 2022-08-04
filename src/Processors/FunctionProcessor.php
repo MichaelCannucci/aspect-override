@@ -5,7 +5,7 @@ namespace AspectOverride\Processors;
 class FunctionProcessor extends AbstractProcessor {
     public const NAME = 'aspect_mock_function_override';
 
-    public const PATTERN = '/(?<!new|function)(\s|\()(((?!function|if|else|elseif)\w+)(\(.*?\)))/m';
+    public const PATTERN = '/(?<!new|function)(\s|\()(((?!function|if|else|elseif)\w+)(\())/m';
 
     public const NAMESPACE_PATTERN = '/namespace (.+)(;| {)/m';
 
@@ -18,7 +18,7 @@ class FunctionProcessor extends AbstractProcessor {
     ];
 
     public function onNewFile(): void {
-        $this->namespaces = [];
+        $this->namespaces = [''];
     }
 
     public function transform(string $data): string {
@@ -28,8 +28,8 @@ class FunctionProcessor extends AbstractProcessor {
         }
         return (string)preg_replace_callback(self::PATTERN, function ($m) {
             $function = $m[3];
-            if (!array_key_exists($function, self::DENY_LIST)) {
-                $function = $this->loadPatchedFunction($m[3]);
+            if (!array_key_exists($function, self::DENY_LIST) && $this->functionExists($function)) {
+                $function = $this->loadPatchedFunction($function);
             }
             return $m[1] . $function . $m[4];
         }, $data);
@@ -37,8 +37,7 @@ class FunctionProcessor extends AbstractProcessor {
 
     public function loadPatchedFunction(string $name): string {
         $uniqueName = $name . '_' . md5($name);
-        $namespaces = empty($this->namespaces) ? [''] : $this->namespaces;
-        foreach ($namespaces as $namespace) {
+        foreach ($this->namespaces as $namespace) {
             [$parameters, $passed] = $this->getOriginalParameters($namespace, $name);
             $code = /** @lang PHP */ "
               namespace $namespace {
@@ -79,6 +78,18 @@ class FunctionProcessor extends AbstractProcessor {
         } catch (\ReflectionException $e) {
             throw new \RuntimeException($e->getMessage());
         }
+    }
+
+    protected function functionExists(string $function): bool {
+      if(function_exists($function)) {
+        return true;
+      }
+      foreach ($this->namespaces as $namespace) {
+        if(function_exists($namespace . '\\' . $function)) {
+          return true;
+        }
+      }
+      return false;
     }
 
     /**
