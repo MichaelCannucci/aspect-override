@@ -1,5 +1,7 @@
 # Aspect Override
 
+**This library is experimental until version 1.0.0 and may break on updates**
+
 Override methods (Through an aspect oriented approach) and functions within your PHP tests
 
 **Note**: This library is only intended to be used in your testing environment and has no guarantees of stability in production environments
