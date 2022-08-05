@@ -2,6 +2,12 @@
 
 namespace AspectOverride\Processors;
 
+use AspectOverride\Lexer\OnSequenceMatched;
+use AspectOverride\Lexer\SequenceGenerator;
+use AspectOverride\Lexer\SequenceMatchingLexer;
+use AspectOverride\Lexer\Token\ProvidesData;
+use AspectOverride\Lexer\Token\Token as T;
+
 class ClassMethodProcessor extends AbstractProcessor {
     public const NAME = 'aspect_mock_method_override';
 
@@ -30,8 +36,23 @@ class ClassMethodProcessor extends AbstractProcessor {
      * @return string
      */
     public function transform(string $data): string {
-        // After has to come first or else we end up writing over the 'before' transformation
-        return $this->beforeTransform($this->afterTransform($data));
+        $lexer = New SequenceMatchingLexer([
+            new SequenceGenerator([
+                T::anyOf(
+                    T::PRIVATE(), T::PROTECTED(), T::PUBLIC()
+                ),
+                T::FUNCTION(),
+                T::OPENING_PAREN(),
+                T::anyUntil(T::OPENING_BRACKET()),
+                T::capture(T::anyUntil(T::CLOSING_BRACKET()))
+            ], new class implements OnSequenceMatched {
+                function __invoke(int $start, int $end, string $code, array $captures) {
+                    [$function] = $captures;
+                    return str_replace($function, '', $code);
+                }
+            })
+        ]);
+        return $lexer->transform($data);
     }
 
     protected function beforeTransform(string $data): string {
