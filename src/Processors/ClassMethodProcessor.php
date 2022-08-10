@@ -5,7 +5,6 @@ namespace AspectOverride\Processors;
 use AspectOverride\Lexer\OnSequenceMatched;
 use AspectOverride\Lexer\SequenceGenerator;
 use AspectOverride\Lexer\SequenceMatchingLexer;
-use AspectOverride\Lexer\Token\ProvidesData;
 use AspectOverride\Lexer\Token\Token as T;
 
 class ClassMethodProcessor extends AbstractProcessor {
@@ -46,9 +45,8 @@ class ClassMethodProcessor extends AbstractProcessor {
                 T::anyUntil(T::OPENING_BRACKET()),
                 T::capture(T::anyUntil(T::CLOSING_BRACKET()))
             ], new class implements OnSequenceMatched {
-                function __invoke(int $start, int $end, string $code, array $captures) {
-                    [$function] = $captures;
-                    return str_replace($function, '', $code);
+                function __invoke(array $captures) {
+
                 }
             })
         ]);

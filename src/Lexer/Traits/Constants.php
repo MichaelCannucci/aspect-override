@@ -11,14 +11,20 @@ trait Constants
 {
     public static function __callStatic($name, $arguments)
     {
-        static $options;
+        static $options = [];
+        static $cache = [];
+        $class = get_class();
         if(!$options) {
-            $options = (new \ReflectionClass(Token::class))->getConstants();
+            $options = (new \ReflectionClass($class))->getConstants();
         }
         if(array_key_exists($name, $options)) {
-            return new self($name);
+            $option = $options[$name];
+            if(!array_key_exists($class, $cache) || !array_key_exists($option, $cache[$class])) {
+                $cache[$class][$option] = new self($option);
+            }
+            return $cache[$class][$option];
         }
-        throw new \InvalidArgumentException("No predefined token named: $name");
+        throw new \InvalidArgumentException("No predefined constant named: $name");
     }
 
 }

@@ -4,7 +4,7 @@ namespace AspectOverride\Lexer\Token;
 
 use AspectOverride\Lexer\SequenceResult;
 
-class CaptureWith implements TokenMatches, ProvidesData
+class CaptureWith implements TokenMatches, CapturesData
 {
     /**
      * @var TokenMatches
@@ -30,7 +30,7 @@ class CaptureWith implements TokenMatches, ProvidesData
         return $sequenceResult;
     }
 
-    public function getData(): array {
+    public function getCaptures(): array {
         return $this->buffer;
     }
 }

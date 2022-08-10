@@ -2,6 +2,7 @@
 
 namespace AspectOverride\Lexer;
 
+use AspectOverride\Lexer\Token\CapturesData;
 use AspectOverride\Lexer\Token\Token;
 use Generator;
 
@@ -19,31 +20,42 @@ class SequenceGenerator {
     /** @param Token[] $tokenSequence */
     public function __construct(
         array $tokenSequence,
-        OnSequenceMatched $onSequenceMatched,
+        OnSequenceMatched $onSequenceMatched
     ) {
         $this->tokenSequence = $tokenSequence;
         $this->onSequenceMatched = $onSequenceMatched;
     }
 
-    public function start(string &$code): Generator {
-        while($sequence = current($this->tokenSequence)) {
-            [$token, $start, $end] = yield;
-            $result = $sequence->matches($token);
+    /**
+     * @return Generator return null if the sequence has not been matched or otherwise returns a string
+     */
+    public function generator(): Generator {
+        while($sequenceToken = current($this->tokenSequence)) {
+            $token = yield;
+            $result = $sequenceToken->matches($token);
             if($result->value === SequenceResult::FAIL) {
                 reset($this->tokenSequence);
-                yield false;
+                yield null;
             } else if ($result->value === SequenceResult::REUSE) {
-                yield true;
+                yield null;
             } else if ($result->value === SequenceResult::NEXT) {
                 next($this->tokenSequence);
-                yield true;
+                yield $this->checkIfSequenceIsComplete($sequenceToken);
             }
-            // We got to the end of the sequence, we can consider the sequence matched
-            if(false === current($this->tokenSequence)) {
-                ($this->onSequenceMatched)($start, $end, $code);
-            }
-            // Reset to let the sequence continue
-            reset($this->tokenSequence);
         }
+    }
+    protected function checkIfSequenceIsComplete($sequenceToken) {
+        // We got to the end of the sequence, we can consider the sequence matched
+        if(false === current($this->tokenSequence)) {
+            // Sequences should never end, so we restart the sequence
+            reset($this->tokenSequence);
+
+            $captures = [];
+            if ($sequenceToken instanceof CapturesData) {
+                $captures = $sequenceToken->getCaptures();
+            }
+            return ($this->onSequenceMatched)($captures);
+        }
+        return null;
     }
 }
