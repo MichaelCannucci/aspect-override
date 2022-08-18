@@ -2,16 +2,16 @@
 
 namespace AspectOverride\Lexer;
 
-use AspectOverride\Lexer\Traits\Constants;
+use AspectOverride\Lexer\Traits\ConstantContainer;
 
 /**
- * @method static SequenceResult NEXT()
- * @method static SequenceResult REUSE()
- * @method static SequenceResult FAIL()
+ * @method static Sequence NEXT()
+ * @method static Sequence REUSE()
+ * @method static Sequence FAIL()
  */
-class SequenceResult
+class Sequence
 {
-    use Constants;
+    use ConstantContainer;
 
     public const NEXT = 1;
     public const REUSE = 2;
@@ -27,7 +27,7 @@ class SequenceResult
         $this->value = $result;
     }
 
-    public static function fromBool(bool $result): SequenceResult {
+    public static function fromBool(bool $result): Sequence {
         return $result ? self::NEXT() : self::FAIL();
     }
 }

@@ -4,5 +4,6 @@ namespace AspectOverride\Lexer;
 
 interface OnSequenceMatched
 {
-    public function __invoke(array $captures);
+    /** @param array{0:int,1:string}[] $captures */
+    public function __invoke(array $captures): array;
 }

@@ -4,7 +4,6 @@ namespace AspectOverride\Lexer;
 
 use AspectOverride\Lexer\Token\CapturesData;
 use AspectOverride\Lexer\Token\Token;
-use Generator;
 
 class SequenceGenerator {
 
@@ -26,24 +25,21 @@ class SequenceGenerator {
         $this->onSequenceMatched = $onSequenceMatched;
     }
 
-    /**
-     * @return Generator return null if the sequence has not been matched or otherwise returns a string
-     */
-    public function generator(): Generator {
-        while($sequenceToken = current($this->tokenSequence)) {
-            $token = yield;
-            $result = $sequenceToken->matches($token);
-            if($result->value === SequenceResult::FAIL) {
-                reset($this->tokenSequence);
-                yield null;
-            } else if ($result->value === SequenceResult::REUSE) {
-                yield null;
-            } else if ($result->value === SequenceResult::NEXT) {
-                next($this->tokenSequence);
-                yield $this->checkIfSequenceIsComplete($sequenceToken);
-            }
+    public function next(int $index, string $token): ?array {
+        $sequenceToken = current($this->tokenSequence);
+        $result = $sequenceToken->matches($index, $token);
+        if($result->value === Sequence::FAIL) {
+            reset($this->tokenSequence);
+            return null;
+        } else if ($result->value === Sequence::REUSE) {
+            return null;
+        } else if ($result->value === Sequence::NEXT) {
+            next($this->tokenSequence);
+            return $this->checkIfSequenceIsComplete($sequenceToken);
         }
+        return $this->checkIfSequenceIsComplete($sequenceToken);
     }
+
     protected function checkIfSequenceIsComplete($sequenceToken) {
         // We got to the end of the sequence, we can consider the sequence matched
         if(false === current($this->tokenSequence)) {

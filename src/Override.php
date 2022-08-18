@@ -12,9 +12,12 @@ class Override {
      * @return callable Function to unregister the override
      */
     public static function method(string $class, string $method, callable $override): callable {
-        Instance::getInstance()->getClassOverwriteRegistry()->set($class, $method, $override);
+        Instance::getInstance()->getClassRegistry()->set($class, $method, function($args, $execute) use ($override) {
+            // Ignore original
+            return $override($args);
+        });
         return function () use ($class, $method) {
-            Instance::getInstance()->getClassOverwriteRegistry()->remove($class, $method);
+            Instance::getInstance()->getClassRegistry()->remove($class, $method);
         };
     }
 
@@ -25,9 +28,12 @@ class Override {
      * @return callable Function to unregister the override
      */
     public static function beforeMethod(string $class, string $method, callable $override): callable {
-        Instance::getInstance()->getClassBeforeRegistry()->set($class, $method, $override);
+        Instance::getInstance()->getClassRegistry()->set($class, $method, function($args, $execute) use ($override) {
+            $newArgs = $override($args);
+            return $execute($newArgs);
+        });
         return function () use ($class, $method) {
-            Instance::getInstance()->getClassBeforeRegistry()->remove($class, $method);
+            Instance::getInstance()->getClassRegistry()->remove($class, $method);
         };
     }
 
@@ -38,9 +44,12 @@ class Override {
      * @return callable Function to unregister the override
      */
     public static function afterMethod(string $class, string $method, callable $override): callable {
-        Instance::getInstance()->getClassAfterRegistry()->set($class, $method, $override);
+        Instance::getInstance()->getClassRegistry()->set($class, $method, function($args, $execute) use ($override) {
+            $result = $execute($args);
+            return $override($result);
+        });
         return function () use ($class, $method) {
-            Instance::getInstance()->getClassAfterRegistry()->remove($class, $method);
+            Instance::getInstance()->getClassRegistry()->remove($class, $method);
         };
     }
 

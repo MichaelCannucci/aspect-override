@@ -2,7 +2,7 @@
 
 namespace AspectOverride\Lexer\Token;
 
-use AspectOverride\Lexer\SequenceResult;
+use AspectOverride\Lexer\Sequence;
 
 class AnyUntil implements TokenMatches
 {
@@ -10,14 +10,15 @@ class AnyUntil implements TokenMatches
     protected $until;
 
     public function __construct(TokenMatches $until){
+        $this->until = $until;
     }
 
-    public function matches(string $token): SequenceResult
+    public function matches(int $key, string $token): Sequence
     {
-        $result = $this->until->matches($token);
-        if($result->value === SequenceResult::FAIL) {
-            return SequenceResult::REUSE();
+        $result = $this->until->matches($key, $token);
+        if($result->value === Sequence::FAIL) {
+            return Sequence::REUSE();
         }
-        return SequenceResult::NEXT();
+        return Sequence::NEXT();
     }
 }

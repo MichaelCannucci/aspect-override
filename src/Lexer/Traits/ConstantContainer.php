@@ -7,7 +7,7 @@ use AspectOverride\Lexer\Token\Token;
 /**
  * Bad enum replacement for 7.1
  */
-trait Constants
+trait ConstantContainer
 {
     public static function __callStatic($name, $arguments)
     {

@@ -4,5 +4,8 @@ namespace AspectOverride\Lexer\Token;
 
 interface CapturesData
 {
-    public function getCaptures();
+    /**
+     * @return Capture[]
+     */
+    public function getCaptures(): array;
 }

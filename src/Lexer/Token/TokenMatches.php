@@ -2,9 +2,9 @@
 
 namespace AspectOverride\Lexer\Token;
 
-use AspectOverride\Lexer\SequenceResult;
+use AspectOverride\Lexer\Sequence;
 
 interface TokenMatches
 {
-    public function matches(string $token): SequenceResult;
+    public function matches(int $key, string $token): Sequence;
 }

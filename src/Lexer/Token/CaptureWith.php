@@ -2,7 +2,7 @@
 
 namespace AspectOverride\Lexer\Token;
 
-use AspectOverride\Lexer\SequenceResult;
+use AspectOverride\Lexer\Sequence;
 
 class CaptureWith implements TokenMatches, CapturesData
 {
@@ -12,25 +12,25 @@ class CaptureWith implements TokenMatches, CapturesData
     protected $token;
 
     /**
-     * @var string[]
+     * @var Capture[]
      */
-    protected $buffer;
+    protected $captures;
 
     public function __construct(TokenMatches $token)
     {
         $this->token = $token;
     }
 
-    public function matches(string $token): SequenceResult
+    public function matches(int $key, string $token): Sequence
     {
-        $sequenceResult = $this->token->matches($token);
-        if($sequenceResult->value !== SequenceResult::FAIL) {
-            $this->buffer[] = $token;
+        $sequenceResult = $this->token->matches($key, $token);
+        if($sequenceResult->value !== Sequence::FAIL) {
+            $this->captures[] = new Capture($key, $token);
         }
         return $sequenceResult;
     }
 
     public function getCaptures(): array {
-        return $this->buffer;
+        return $this->captures;
     }
 }

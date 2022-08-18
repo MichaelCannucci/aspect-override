@@ -2,8 +2,8 @@
 
 namespace AspectOverride\Lexer\Token;
 
-use AspectOverride\Lexer\SequenceResult;
-use AspectOverride\Lexer\Traits\Constants;
+use AspectOverride\Lexer\Sequence;
+use AspectOverride\Lexer\Traits\ConstantContainer;
 
 /**
  * @method static Token PUBLIC()
@@ -20,7 +20,7 @@ use AspectOverride\Lexer\Traits\Constants;
  */
 class Token implements TokenMatches
 {
-    use Constants;
+    use ConstantContainer;
 
     public const PUBLIC = 'public';
     public const PROTECTED = 'protected';
@@ -48,10 +48,10 @@ class Token implements TokenMatches
         return new self($token);
     }
 
-    public function matches(string $token): SequenceResult {
+    public function matches(int $key, string $token): Sequence {
         switch ($token) {
-            case self::ANY:  return SequenceResult::NEXT();
-            default: return SequenceResult::fromBool($this->token === $token);
+            case self::ANY:  return Sequence::NEXT();
+            default: return Sequence::fromBool($this->token === $token);
         }
     }
 
@@ -65,5 +65,9 @@ class Token implements TokenMatches
 
     public static function capture(TokenMatches $token): CaptureWith {
         return new CaptureWith($token);
+    }
+
+    public static function anyUntilEmptyStack(TokenMatches $add, TokenMatches $remove): AnyUntilEmptyStack {
+        return new AnyUntilEmptyStack($add, $remove);
     }
 }

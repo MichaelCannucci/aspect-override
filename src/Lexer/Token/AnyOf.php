@@ -2,16 +2,24 @@
 
 namespace AspectOverride\Lexer\Token;
 
-use AspectOverride\Lexer\SequenceResult;
+use AspectOverride\Lexer\Sequence;
 
 class AnyOf implements TokenMatches
 {
-    /** @var array */
+    /** @var TokenMatches[] */
     protected $tokens;
-    public function __construct($tokens) { }
 
-    public function matches(string $token): SequenceResult
+    public function __construct(array $tokens) {
+        $this->tokens = $tokens;
+    }
+
+    public function matches(int $key, string $token): Sequence
     {
-        return SequenceResult::fromBool(in_array($token, $this->tokens));
+        foreach ($this->tokens as $token) {
+            if($token->matches($key, $token)) {
+                return Sequence::fromBool(true);
+            }
+        }
+        return Sequence::fromBool(false);
     }
 }
