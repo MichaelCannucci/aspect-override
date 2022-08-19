@@ -15,11 +15,12 @@ class AnyOf implements TokenMatches
 
     public function matches(int $key, string $token): Sequence
     {
-        foreach ($this->tokens as $token) {
-            if($token->matches($key, $token)) {
-                return Sequence::fromBool(true);
+        foreach ($this->tokens as $tokens) {
+            $result = $tokens->matches($key, $token);
+            if($result !== Sequence::FAIL()) {
+                return $result;
             }
         }
-        return Sequence::fromBool(false);
+        return Sequence::FAIL();
     }
 }
