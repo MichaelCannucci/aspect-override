@@ -38,11 +38,11 @@ it('can overwrite final function arguments', function () {
     )->toBe(3);
 });
 
-it('can overwrite specific function arguments', function () {
+it('can overwrite multiple function arguments', function () {
     sandbox(
         static function () {
             Override::beforeMethod("Test", "echoSecondArg", function ($a, $b, $c) {
-                return ['b' => 3];
+                return [$a, 3, $c];
             });
         },
         static function () {

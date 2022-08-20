@@ -12,9 +12,9 @@ class Override {
      * @return callable Function to unregister the override
      */
     public static function method(string $class, string $method, callable $override): callable {
-        Instance::getInstance()->getClassRegistry()->set($class, $method, function($args, $execute) use ($override) {
+        Instance::getInstance()->getClassRegistry()->set($class, $method, function($execute, ...$args) use ($override) {
             // Ignore original
-            return $override($args);
+            return $override(...$args);
         });
         return function () use ($class, $method) {
             Instance::getInstance()->getClassRegistry()->remove($class, $method);
@@ -28,9 +28,9 @@ class Override {
      * @return callable Function to unregister the override
      */
     public static function beforeMethod(string $class, string $method, callable $override): callable {
-        Instance::getInstance()->getClassRegistry()->set($class, $method, function($args, $execute) use ($override) {
-            $newArgs = $override($args);
-            return $execute($newArgs);
+        Instance::getInstance()->getClassRegistry()->set($class, $method, function($execute, $args) use ($override) {
+            $newArgs = $override(...$args);
+            return $execute(...$newArgs);
         });
         return function () use ($class, $method) {
             Instance::getInstance()->getClassRegistry()->remove($class, $method);
@@ -44,8 +44,8 @@ class Override {
      * @return callable Function to unregister the override
      */
     public static function afterMethod(string $class, string $method, callable $override): callable {
-        Instance::getInstance()->getClassRegistry()->set($class, $method, function($args, $execute) use ($override) {
-            $result = $execute($args);
+        Instance::getInstance()->getClassRegistry()->set($class, $method, function($execute, $args) use ($override) {
+            $result = $execute(...$args);
             return $override($result);
         });
         return function () use ($class, $method) {

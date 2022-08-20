@@ -7,7 +7,6 @@ use AspectOverride\Lexer\SequenceGenerator;
 use AspectOverride\Lexer\SequenceRules;
 use AspectOverride\Lexer\Token\Capture;
 use AspectOverride\Lexer\Token\Token as T;
-use AspectOverride\Utility\TokenUtility;
 
 class ClassMethodProcessor extends AbstractProcessor {
     public const NAME = 'aspect_mock_method_override';
@@ -26,7 +25,6 @@ class ClassMethodProcessor extends AbstractProcessor {
                     T::PRIVATE(), T::PROTECTED(), T::PUBLIC()
                 ),
                 T::FUNCTION(),
-                T::OPENING_PAREN(),
                 T::capture(
                     T::anyUntilEmptyStack(
                         T::OPENING_BRACKET(),
@@ -34,15 +32,27 @@ class ClassMethodProcessor extends AbstractProcessor {
                     )
                 )
             ], new class implements OnSequenceMatched {
+                /** @param Capture[] $captures */
                 function __invoke(array $captures): array {
-                    $isVoid = array_reduce($captures, function (bool $carry, Capture $capture) {
-                        return $carry && in_array($capture->text, ['void',':void',':void{']);
-                    }, true);
-                    TokenUtility::wrapCaptures(
-                        ($isVoid ? '' : 'return ') . "\AspectOverride\Facades\Instance::wrapAround(__CLASS__, __FUNCTION__, func_get_args(), ",
-                        ");",
-                        $captures
-                    );
+                    $void = false;
+                    $fullText = implode('', array_map(function(Capture $capture) {return $capture->text;}, $captures));
+                    $arguments = "";
+                    if(preg_match("/\((.*?)\)/", $fullText, $matches)) {
+                        $arguments = $matches[1];
+                    }
+                    foreach ($captures as $capture) {
+                        if(!$void) {
+                            $void = in_array($capture->text, ['void',':void',':void{']);
+                        }
+                        if($capture->text === '{') {
+                            $capture->text .= ($void ? '' : 'return ') .
+                                "\AspectOverride\Facades\Instance::wrapAround(" .
+                                "__CLASS__, __FUNCTION__, func_get_args(), function($arguments){";
+                            break;
+                        }
+                    }
+                    $last = $captures[count($captures) - 1];
+                    $last->text .= ');}';
                     return $captures;
                 }
             })
