@@ -4,6 +4,7 @@ namespace AspectOverride\Lexer\Token;
 
 use AspectOverride\Lexer\Sequence;
 use AspectOverride\Lexer\Traits\ConstantContainer;
+use JetBrains\PhpStorm\Language;
 
 /**
  * @method static Token PUBLIC()
@@ -16,6 +17,7 @@ use AspectOverride\Lexer\Traits\ConstantContainer;
  * @method static Token CLOSING_BRACKET()
  * @method static Token RETURN()
  * @method static Token COLON()
+ * @method static Token COMMA()
  * @method static Token ANY()
  */
 class Token implements TokenMatches
@@ -32,6 +34,7 @@ class Token implements TokenMatches
     public const CLOSING_BRACKET = '}';
     public const RETURN = 'return';
     public const COLON = ':';
+    public const COMMA = ';';
     public const ANY = '*';
 
     /**
@@ -69,5 +72,17 @@ class Token implements TokenMatches
 
     public static function anyUntilEmptyStack(TokenMatches $add, TokenMatches $remove): AnyUntilEmptyStack {
         return new AnyUntilEmptyStack($add, $remove);
+    }
+
+    public static function not(TokenMatches $token): Not {
+        return new Not($token);
+    }
+
+    public static function _and(TokenMatches $first, TokenMatches $second): AndToken {
+        return new AndToken($first, $second);
+    }
+
+    public static function regex(string $regex): Regex {
+        return new Regex($regex);
     }
 }

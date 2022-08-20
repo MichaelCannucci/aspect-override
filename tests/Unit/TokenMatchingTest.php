@@ -51,7 +51,7 @@ it("can transform code", function() {
     class Test {
         public function empty() {return \AspectOverride\Facades\Instance::wrapAround(__CLASS__, __FUNCTION__, func_get_args(), function(){
         });}
-        public function test(\$a, string \$b, &\$c) {return \AspectOverride\Facades\Instance::wrapAround(__CLASS__, __FUNCTION__, func_get_args(), function(\$a,string\$b,&\$c){ return 2; });}
+        public function test(\$a, string \$b, &\$c) {return \AspectOverride\Facades\Instance::wrapAround(__CLASS__, __FUNCTION__, func_get_args(), function(\$a, string \$b, &\$c){ return 2; });}
     }
     ");
 });

@@ -6,6 +6,7 @@ use AspectOverride\Lexer\OnSequenceMatched;
 use AspectOverride\Lexer\SequenceGenerator;
 use AspectOverride\Lexer\SequenceRules;
 use AspectOverride\Lexer\Token\Capture;
+use AspectOverride\Lexer\Token\Special\MethodSignatureDeclaration;
 use AspectOverride\Lexer\Token\Token as T;
 
 class ClassMethodProcessor extends AbstractProcessor {
@@ -24,20 +25,27 @@ class ClassMethodProcessor extends AbstractProcessor {
                 T::anyOf(
                     T::PRIVATE(), T::PROTECTED(), T::PUBLIC()
                 ),
-                T::FUNCTION(),
+                T::capture(T::anyUntil(T::FUNCTION())),
                 T::capture(
-                    T::anyUntilEmptyStack(
-                        T::OPENING_BRACKET(),
-                        T::CLOSING_BRACKET()
+                    T::_and(
+                        T::anyUntilEmptyStack(
+                            T::OPENING_BRACKET(),
+                            T::CLOSING_BRACKET()
+                        ),
+                        T::not(new MethodSignatureDeclaration())
                     )
                 )
+
             ], new class implements OnSequenceMatched {
                 /** @param Capture[] $captures */
                 function __invoke(array $captures): array {
                     $void = false;
-                    $fullText = implode('', array_map(function(Capture $capture) {return $capture->text;}, $captures));
+                    $merged = implode(
+                        ' ',
+                        array_map(function(Capture $capture) {return $capture->text;}, $captures)
+                    );
                     $arguments = "";
-                    if(preg_match("/\((.*?)\)/", $fullText, $matches)) {
+                    if(preg_match("/\((.*?)\)/", $merged, $matches)) {
                         $arguments = $matches[1];
                     }
                     foreach ($captures as $capture) {

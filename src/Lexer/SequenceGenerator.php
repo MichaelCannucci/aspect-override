@@ -40,7 +40,7 @@ class SequenceGenerator {
         return $this->checkIfSequenceIsComplete();
     }
 
-    protected function checkIfSequenceIsComplete() {
+    protected function checkIfSequenceIsComplete(): ?array {
         // We got to the end of the sequence, we can consider the sequence matched
         if(false === current($this->tokenSequence)) {
             // Sequences should never end, so we restart the sequence
@@ -54,7 +54,9 @@ class SequenceGenerator {
                     }
                 }
             }
-            return ($this->onSequenceMatched)($captures);
+            if(!empty($captures)) {
+                return ($this->onSequenceMatched)($captures);
+            }
         }
         return null;
     }
