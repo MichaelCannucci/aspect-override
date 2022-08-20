@@ -54,8 +54,8 @@ class StreamInterceptor {
         }
         if (empty($streamProcessors)) {
             self::$streamProcessors = $streamProcessors ?: [
-                new ClassMethodProcessor(),
-                new FunctionProcessor()
+                new FunctionProcessor(),
+                new ClassMethodProcessor()
             ];
         }
         foreach (self::$streamProcessors as $streamProcessors) {
