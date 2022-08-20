@@ -13,10 +13,10 @@ class AnyOf implements TokenMatches
         $this->tokens = $tokens;
     }
 
-    public function matches(int $key, string $token): Sequence
+    public function matches(int $key, string $token, string $normalizedToken): Sequence
     {
         foreach ($this->tokens as $tokens) {
-            $result = $tokens->matches($key, $token);
+            $result = $tokens->matches($key, $token, $normalizedToken);
             if($result !== Sequence::FAIL()) {
                 return $result;
             }

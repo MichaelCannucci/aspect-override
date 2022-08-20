@@ -13,9 +13,9 @@ class AnyUntil implements TokenMatches
         $this->until = $until;
     }
 
-    public function matches(int $key, string $token): Sequence
+    public function matches(int $key, string $token, string $normalizedToken): Sequence
     {
-        $result = $this->until->matches($key, $token);
+        $result = $this->until->matches($key, $token, $normalizedToken);
         if($result->value === Sequence::FAIL) {
             return Sequence::REUSE();
         }

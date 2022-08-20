@@ -25,30 +25,34 @@ class SequenceGenerator {
         $this->onSequenceMatched = $onSequenceMatched;
     }
 
-    public function next(int $index, string $token): ?array {
+    public function next(int $index, string $token, string $normalizedToken): ?array {
         $sequenceToken = current($this->tokenSequence);
-        $result = $sequenceToken->matches($index, $token);
-        if($result->value === Sequence::FAIL) {
+        $result = $sequenceToken->matches($index, $token, $normalizedToken);
+        if($result === Sequence::FAIL()) {
             reset($this->tokenSequence);
             return null;
-        } else if ($result->value === Sequence::REUSE) {
+        } else if ($result === Sequence::REUSE()) {
             return null;
-        } else if ($result->value === Sequence::NEXT) {
+        } else if ($result === Sequence::NEXT()) {
             next($this->tokenSequence);
-            return $this->checkIfSequenceIsComplete($sequenceToken);
+            return $this->checkIfSequenceIsComplete();
         }
-        return $this->checkIfSequenceIsComplete($sequenceToken);
+        return $this->checkIfSequenceIsComplete();
     }
 
-    protected function checkIfSequenceIsComplete($sequenceToken) {
+    protected function checkIfSequenceIsComplete() {
         // We got to the end of the sequence, we can consider the sequence matched
         if(false === current($this->tokenSequence)) {
             // Sequences should never end, so we restart the sequence
             reset($this->tokenSequence);
 
             $captures = [];
-            if ($sequenceToken instanceof CapturesData) {
-                $captures = $sequenceToken->getCaptures();
+            foreach ($this->tokenSequence as $sequence) {
+                if ($sequence instanceof CapturesData) {
+                    foreach ($sequence->popCaptures() as $capture) {
+                        $captures[] = $capture;
+                    }
+                }
             }
             return ($this->onSequenceMatched)($captures);
         }

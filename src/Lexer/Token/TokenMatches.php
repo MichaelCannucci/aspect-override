@@ -6,5 +6,5 @@ use AspectOverride\Lexer\Sequence;
 
 interface TokenMatches
 {
-    public function matches(int $key, string $token): Sequence;
+    public function matches(int $key, string $token, string $normalizedToken): Sequence;
 }

@@ -33,7 +33,7 @@ class SequenceRules {
             // (should expect all lowercase)
             $normalizedToken = trim(mb_convert_case($token, MB_CASE_LOWER));
             foreach ($this->sequences as $sequence) {
-                $return = $sequence->next($index, $normalizedToken);
+                $return = $sequence->next($index, $token, $normalizedToken);
                 if(null !== $return) {
                     /** @var Capture $capture */
                     foreach ($return as $capture) {

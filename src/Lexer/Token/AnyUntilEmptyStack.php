@@ -21,18 +21,18 @@ class AnyUntilEmptyStack implements TokenMatches
         $this->remove = $remove;
     }
 
-    public function matches(int $key, string $token): Sequence
+    public function matches(int $key, string $token, string $normalizedToken): Sequence
     {
-        $add = $this->add->matches($key, $token);
-        $remove = $this->remove->matches($key, $token);
+        $add = $this->add->matches($key, $token, $normalizedToken);
+        $remove = $this->remove->matches($key, $token, $normalizedToken);
         if($add->value !== Sequence::FAIL) {
             $this->counter = $this->counter + 1;
         }
         if($remove->value !== Sequence::FAIL) {
             $this->counter = $this->counter - 1;
-        }
-        if($this->counter === 0) {
-            return Sequence::NEXT();
+            if($this->counter === 0) {
+                return Sequence::NEXT();
+            }
         }
         return Sequence::REUSE();
     }

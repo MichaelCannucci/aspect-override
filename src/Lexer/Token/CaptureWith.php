@@ -21,16 +21,18 @@ class CaptureWith implements TokenMatches, CapturesData
         $this->token = $token;
     }
 
-    public function matches(int $key, string $token): Sequence
+    public function matches(int $key, string $token, string $normalizedToken): Sequence
     {
-        $sequenceResult = $this->token->matches($key, $token);
+        $sequenceResult = $this->token->matches($key, $token, $normalizedToken);
         if($sequenceResult->value !== Sequence::FAIL) {
             $this->captures[] = new Capture($key, $token);
         }
         return $sequenceResult;
     }
 
-    public function getCaptures(): array {
-        return $this->captures;
+    public function popCaptures(): array {
+        $captures = $this->captures;
+        $this->captures = [];
+        return $captures;
     }
 }

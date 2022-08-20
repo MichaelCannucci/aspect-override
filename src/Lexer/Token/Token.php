@@ -48,10 +48,10 @@ class Token implements TokenMatches
         return new self($token);
     }
 
-    public function matches(int $key, string $token): Sequence {
-        switch ($token) {
+    public function matches(int $key, string $token, string $normalizedToken): Sequence {
+        switch ($normalizedToken) {
             case self::ANY:  return Sequence::NEXT();
-            default: return Sequence::fromBool($this->token === $token);
+            default: return $this->token === $normalizedToken ? Sequence::NEXT() : Sequence::FAIL();
         }
     }
 

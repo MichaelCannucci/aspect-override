@@ -2,8 +2,10 @@
 
 namespace AspectOverride\Lexer;
 
+use AspectOverride\Lexer\Token\Capture;
+
 interface OnSequenceMatched
 {
-    /** @param array{0:int,1:string}[] $captures */
+    /** @param Capture[] $captures */
     public function __invoke(array $captures): array;
 }
