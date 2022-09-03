@@ -4,23 +4,35 @@ namespace Tests\Support;
 
 /** Hacky code to get tests running */
 class SandboxHelper {
-    public static function generateRunner(\Closure $setup, string $injectedPath): string {
-        $directory = dirname($injectedPath);
+    public static function runner(string $basePath, string $setupFilePath, string $testCasePath): string {
+        $basePath = realpath($basePath);
+        $setupFilePath = realpath($setupFilePath);
+        $testCasePath = realpath($testCasePath);
         $cwd = getcwd();
-        $setupCode = self::getCode($setup);
-        $runner = /** @lang PHP */ "<?php
+        return "<?php
             require '$cwd/vendor/autoload.php';
             
             AspectOverride\Facades\Instance::initialize(
-            AspectOverride\Core\Configuration::create()
-                ->setDirectories([ '$directory' ])
+                AspectOverride\Core\Configuration::create()
+                    ->setDirectories([ '$basePath' ])
+                    ->setDebugDump( '$basePath/output' )
             );
         
-            require '$setupCode';
+            require '$setupFilePath';
                         
-            require '$injectedPath';
+            require '$testCasePath';
         ";
-        return self::tempFile($runner);
+    }
+    public static function storeCode(string $path, string $code) {
+        if (!file_exists($path)) {
+            mkdir($path, 0777, true);
+        }
+        $path = $path . "/" . md5($code) . '.php';
+        $return = file_put_contents($path, $code);
+        if (false === $return) {
+            throw new \RuntimeException("Unable to create file for sandbox: $path");
+        }
+        return $path;
     }
     public static function getCode(\Closure $closure, bool $stripNamespaces = false): string {
         try {
@@ -47,18 +59,9 @@ class SandboxHelper {
             if ($stripNamespaces) {
                 $code = preg_replace('/\\\\.+\\\\/m', '', $code);
             }
-            return self::tempFile("<?php" . PHP_EOL . implode("\n", $namespaces) . PHP_EOL . $code);
+            return "<?php" . PHP_EOL . implode("\n", $namespaces) . PHP_EOL . $code;
         } catch (\ReflectionException $e) {
             throw new \RuntimeException($e->getMessage());
         }
-    }
-    public static function tempFile(string $code): string {
-        $tmp = $_ENV['TEST_RUNNER_TMP'] ?? sys_get_temp_dir();
-        $path = $tmp . "/" . md5($code) . '.php';
-        $return = file_put_contents($path, $code);
-        if (false === $return) {
-            throw new \RuntimeException("Unable to create file for sandbox: $path");
-        }
-        return $path;
     }
 }

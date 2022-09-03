@@ -2,6 +2,8 @@
 
 namespace AspectOverride\Processors;
 
+use AspectOverride\Facades\Instance;
+
 /**
  * Implementation heavily inspired from:
  * https://github.com/php-vcr/php-vcr/blob/master/src/VCR/CodeTransform/AbstractCodeTransform.php
@@ -27,6 +29,7 @@ abstract class AbstractProcessor extends \php_user_filter {
             /** @var \stdClass $bucket */
             $bucket->data = $this->transform($this->removeComments($bucket->data));
             $consumed += $bucket->datalen;
+            Instance::debugDump($bucket->data);
             stream_bucket_append($out, $bucket);
         }
 

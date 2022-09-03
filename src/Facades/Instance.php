@@ -28,6 +28,19 @@ class Instance {
         return self::$instance;
     }
 
+    public static function debugDump($data): void {
+        if($path = Instance::getConfiguration()->getDebugDump()) {
+            $name = md5($data);
+            file_put_contents("$path/$name.php", $data);
+        }
+    }
+
+    public static function initialize(Configuration $configuration): void {
+        self::$instance = new CoreInstance($configuration);
+        self::$instance->reset();
+        self::$instance->start();
+    }
+
     public static function getForFunction(string $fn): ?callable {
         return self::getInstance()->getFunctionRegistry()->get($fn);
     }
@@ -45,11 +58,5 @@ class Instance {
         };
         $around = self::getInstance()->getClassRegistry()->get($class, $method) ?? $stub;
         return $around($execute, $args);
-    }
-
-    public static function initialize(Configuration $configuration): void {
-        self::$instance = new CoreInstance($configuration);
-        self::$instance->reset();
-        self::$instance->start();
     }
 }

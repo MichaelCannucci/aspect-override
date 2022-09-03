@@ -38,13 +38,18 @@
 use Tests\Support\SandboxHelper;
 
 /**
- * @param Closure|string $injected
+ * @param Closure|string $testCase
  */
-function sandbox(Closure $setup, $injected) {
-    $injectedPath = is_string($injected) ?
-        SandboxHelper::tempFile($injected) :
-        SandboxHelper::getCode($injected, true);
-    $runnerPath = SandboxHelper::generateRunner($setup, $injectedPath);
+function sandbox(Closure $setup, $testCase) {
+    $testCase = is_string($testCase) ? $testCase : SandboxHelper::getCode($testCase);
+    $setup = SandboxHelper::getCode($setup);
+    $basePath = __DIR__ . "/../tmp";
+    $runner = SandboxHelper::runner(
+        $basePath,
+        SandboxHelper::storeCode("$basePath/test", $setup),
+        SandboxHelper::storeCode("$basePath/test", $testCase)
+    );
+    $runnerPath = SandboxHelper::storeCode("$basePath/test", $runner);
     $command = implode(' ', [PHP_BINARY, $runnerPath]);
     $result = shell_exec($command);
     if (is_numeric($result)) {
