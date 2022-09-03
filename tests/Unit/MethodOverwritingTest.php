@@ -104,3 +104,18 @@ it("can overwrite reference variables of function", function () {
         "
     )->toBe(3123);
 });
+
+it("can overwrite method in chained calls", function() {
+    sandbox(
+        static function () {
+            function test_function($a) { return $a + 1; }
+
+            Override::function('test_function', function ($a) {
+                return $a + 3;
+            });
+        },
+        static function () {
+            echo test_function(test_function(test_function(1))); // 4
+        }
+    )->toBe(10);
+});

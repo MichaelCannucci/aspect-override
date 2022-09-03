@@ -5,7 +5,7 @@ namespace AspectOverride\Processors;
 class FunctionProcessor extends AbstractProcessor {
     public const NAME = 'aspect_mock_function_override';
 
-    public const PATTERN = '/(?<!new|function)(\s|\()(((?!function|if|else|elseif)\w+)(\())/m';
+    public const PATTERN = '/(function )?(\w+)(\()/';
 
     public const NAMESPACE_PATTERN = '/namespace (.+)(;| {)/m';
 
@@ -14,11 +14,30 @@ class FunctionProcessor extends AbstractProcessor {
 
     /** Function that shouldn't be patched because it breaks things or doesn't make sense */
     private const DENY_LIST = [
-        'extract' => true // extract does nothing because it runs in another scope, so no variables change
+        'extract'      => true, // extract does nothing because it runs in another scope, so no variables change
+        'if'           => true, // Language Keyword
+        'elseif'       => true, // Language Keyword
+        'else'         => true, // Language Keyword
+        'function'     => true, // Language Keyword
+        'while'        => true, // Language Keyword
+        'unset'        => true, // Language Keyword
+        'isset'        => true, // Language Keyword
+        'empty'        => true, // Language Keyword
+        'die'          => true, // Language Keyword
+        'use'          => true, // Language Keyword
+        'match'        => true, // Language Keyword
+        'declare'      => true, // Language Keyword
+        'list'         => true, // Language Keyword
+        'array'        => true, // Language Keyword
+        'require'      => true, // Language Keyword
+        'require_once' => true, // Language Keyword
+        'include'      => true, // Language Keyword
+        'include_once' => true, // Language Keyword
+        'echo'         => true, // Language Keyword
     ];
 
     public function onNewFile(): void {
-        $this->namespaces = [''];
+        $this->namespaces = [];
     }
 
     public function transform(string $data): string {
@@ -27,17 +46,17 @@ class FunctionProcessor extends AbstractProcessor {
             $this->namespaces = $found[1];
         }
         return (string)preg_replace_callback(self::PATTERN, function ($m) {
-            $function = $m[3];
+            $function = $m[2];
             if (!array_key_exists($function, self::DENY_LIST) && $this->functionExists($function)) {
                 $function = $this->loadPatchedFunction($function);
             }
-            return $m[1] . $function . $m[4];
+            return $m[1] . $function . $m[3];
         }, $data);
     }
 
     public function loadPatchedFunction(string $name): string {
         $uniqueName = $name . '_' . md5($name);
-        foreach ($this->namespaces as $namespace) {
+        foreach (($this->namespaces ?: ['']) as $namespace) {
             [$parameters, $passed] = $this->getOriginalParameters($namespace, $name);
             $code = /** @lang PHP */ "
               namespace $namespace {
@@ -76,7 +95,7 @@ class FunctionProcessor extends AbstractProcessor {
             }
             return [implode(',', $functionParameters), implode(',', $passedParameters)];
         } catch (\ReflectionException $e) {
-            throw new \RuntimeException($e->getMessage());
+            throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
