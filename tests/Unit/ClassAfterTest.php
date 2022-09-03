@@ -5,7 +5,7 @@ use AspectOverride\Override;
 it('can overwrite function return', function () {
     sandbox(
         static function () {
-            Override::afterMethod("Test", "returnTwo", function ($a) {
+            Override::after("Test", "returnTwo", function ($a) {
                 return 3;
             });
         },
@@ -23,7 +23,7 @@ it('can overwrite function return', function () {
 it('can overwrite final function return', function () {
     sandbox(
         static function () {
-            Override::afterMethod("Test", "returnTwo", function ($a) {
+            Override::after("Test", "returnTwo", function ($a) {
                 return 3;
             });
         },
@@ -41,7 +41,7 @@ it('can overwrite final function return', function () {
 it('can mutate function return', function () {
     sandbox(
         static function () {
-            Override::afterMethod("Test", "getMutatableObject", function (MutableObject $obj) {
+            Override::after("Test", "getMutatableObject", function (MutableObject $obj) {
                 $obj->a = 3;
                 return $obj;
             });
@@ -67,7 +67,7 @@ it('can mutate function return', function () {
 it('can return a different anonymous function', function () {
     sandbox(
         static function () {
-            Override::afterMethod("Test", "returnFunction", function (callable $a) {
+            Override::after("Test", "returnFunction", function (callable $a) {
                 return function () use ($a) {
                     return $a() + 1;
                 };

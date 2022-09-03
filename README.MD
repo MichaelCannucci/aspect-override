@@ -94,6 +94,7 @@ MyClass::echoThis(2) // 3;
 ```
 
 ### Overwriting specific class methods arguments before running
+
 ```php
 use AspectOverride\Override;
 
@@ -104,7 +105,7 @@ class MyClass {
 }
 
 // Before the function 'echoSecondArg' runs we only modify the second argument and keep the first one as is
-Override::beforeMethod(MyClass::class, 'echoSecondArg', function(int $a, int $b){
+Override::before(MyClass::class, 'echoSecondArg', function(int $a, int $b){
   return ['b' => $b + 1]
 });
 
@@ -112,6 +113,7 @@ MyClass::echoSecondArg(2,3) // 4;
 ```
 
 ### Overwriting a method's return value
+
 ```php
 use AspectOverride\Override;
 
@@ -122,7 +124,7 @@ class MyClass {
 }
 
 // After the function 'echoOne' runs, we increment the result by one 
-Override::afterMethod(MyClass::class, 'echoOne', function($a){
+Override::after(MyClass::class, 'echoOne', function($a){
   return $a + 1;
 });
 

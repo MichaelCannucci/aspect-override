@@ -27,7 +27,7 @@ class Override {
      * @return callable():array callable which match the arguments of the function and the returned array is the arguments to be used instead
      * @return callable Function to unregister the override
      */
-    public static function beforeMethod(string $class, string $method, callable $override): callable {
+    public static function before(string $class, string $method, callable $override): callable {
         Instance::getInstance()->getClassRegistry()->set($class, $method, function($execute, $args) use ($override) {
             $newArgs = $override(...$args);
             return $execute(...$newArgs);
@@ -43,7 +43,7 @@ class Override {
      * @return callable(mixed):mixed callable which has an argument for the functions return and return the modified return
      * @return callable Function to unregister the override
      */
-    public static function afterMethod(string $class, string $method, callable $override): callable {
+    public static function after(string $class, string $method, callable $override): callable {
         Instance::getInstance()->getClassRegistry()->set($class, $method, function($execute, $args) use ($override) {
             $result = $execute(...$args);
             return $override($result);

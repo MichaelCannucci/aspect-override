@@ -5,7 +5,7 @@ use AspectOverride\Override;
 it('can overwrite function arguments', function () {
     sandbox(
         static function () {
-            Override::beforeMethod("Test", "echoArgs", function ($a) {
+            Override::before("Test", "echoArgs", function ($a) {
                 return [3];
             });
         },
@@ -23,7 +23,7 @@ it('can overwrite function arguments', function () {
 it('can overwrite final function arguments', function () {
     sandbox(
         static function () {
-            Override::beforeMethod("Test", "echoArgs", function ($a) {
+            Override::before("Test", "echoArgs", function ($a) {
                 return [3];
             });
         },
@@ -41,7 +41,7 @@ it('can overwrite final function arguments', function () {
 it('can overwrite multiple function arguments', function () {
     sandbox(
         static function () {
-            Override::beforeMethod("Test", "echoSecondArg", function ($a, $b, $c) {
+            Override::before("Test", "echoSecondArg", function ($a, $b, $c) {
                 return [$a, 3, $c];
             });
         },
@@ -59,7 +59,7 @@ it('can overwrite multiple function arguments', function () {
 it('respects pass by ref', function () {
     sandbox(
         static function () {
-            Override::beforeMethod("Test", 'doThingToRef', function ($a) {
+            Override::before("Test", 'doThingToRef', function ($a) {
                 // Since 'extract' is what sets the variables, we don't have to modify the reference ourselves
                 return [3];
             });
