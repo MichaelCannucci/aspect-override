@@ -60,7 +60,7 @@ class Instance {
         // temporary holder for arguments while we mutate them
         $tArgs = array_values($args);
         $result = $around($execute, ...$tArgs);
-        // we need the original function names back for the 'extract' method to apply the arguments back
+        // we need the original argument names back for the 'extract' method to apply the arguments back
         return [array_combine(array_keys($args), $tArgs), $result];
     }
 }

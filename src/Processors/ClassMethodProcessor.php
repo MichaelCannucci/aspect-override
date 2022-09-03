@@ -26,16 +26,21 @@ class ClassMethodProcessor extends AbstractProcessor {
         if (!$tokenizer) {
             $tokenizer = new Tokenizer(new TokenMachine([
                 TokenMachine::FUNCTION_START => function (\PhpToken $token, TokenMachine $machine) {
-                    $argNames = explode(',', str_replace(['$', '&'], '',$machine->capturedArguments));
-                    $quotedNames = "'" . implode("','", $argNames) . "'";
+                    if($machine->capturedArguments) {
+                        $argNames = explode(',', str_replace(['$', '&'], '',$machine->capturedArguments));
+                        $quotedNames = "'" . implode("','", $argNames) . "'";
+                        $gatherArgs = "compact($quotedNames)";
+                    } else {
+                        $gatherArgs = "[]";
+                    }
                     return $token->text .
                         /** @lang PHP */
                         "list(\$args, \$result) = \AspectOverride\Facades\Instance::wrapAround(" .
-                        "__CLASS__, __FUNCTION__, compact($quotedNames), function($machine->capturedArguments){";
+                        "__CLASS__, __FUNCTION__, $gatherArgs, function($machine->capturedArguments){";
                 },
                 TokenMachine::FUNCTION_END => function (\PhpToken $token, TokenMachine $machine) {
-                    $return = $machine->voidReturn ? '' : /** @lang PHP */ 'return $result';
-                    return $token->text . /** @lang PHP */"); extract(\$args, EXTR_OVERWRITE); $return;}";
+                    $return = $machine->voidReturn ? '' : /** @lang PHP */ 'return $result;';
+                    return $token->text . /** @lang PHP */"); if(\$args) { extract(\$args, EXTR_OVERWRITE); } $return }";
                 }
             ]));
         }
