@@ -4,16 +4,15 @@ namespace AspectOverride\Lexer;
 
 class TokenMachine
 {
-    public const START = 0;
-    public const FUNCTION_VISIBILITY = 1;
-    public const FUNCTION_KEYWORD = 2;
-    public const FUNCTION_NAME = 3;
-    public const PARAMETER_START = 4;
-    public const PARAMETER_ARGUMENTS = 5;
-    public const PARAMETER_END = 6;
+    public const START                = 1;
+    public const FUNCTION_KEYWORD     = 2;
+    public const FUNCTION_NAME        = 3;
+    public const PARAMETER_START      = 4;
+    public const PARAMETER_ARGUMENTS  = 5;
+    public const PARAMETER_END        = 6;
     public const FUNCTION_RETURN_TYPE = 7;
-    public const FUNCTION_START = 8;
-    public const FUNCTION_END = 9;
+    public const FUNCTION_START       = 8;
+    public const FUNCTION_END         = 9;
 
     public $voidReturn = false;
     public $capturedArguments = "";
@@ -46,25 +45,27 @@ class TokenMachine
             }
             if ($this->stack === 0) {
                 $return = $this->checkStateAndReturnToken($this->state, self::FUNCTION_END, $token);
-                $this->state = self::START;
+                $this->reset();
                 return $return;
             }
             return $token->text;
         }
 
-        if ($token->is([T_PRIVATE, T_PUBLIC, T_PROTECTED]) && $this->inState(self::START)):
-            $nextState = self::FUNCTION_VISIBILITY;
-        elseif ($token->is(T_FUNCTION) && $this->inState(self::FUNCTION_VISIBILITY, self::START)):
+        if ($token->is(T_FUNCTION) && $this->inState(self::START, self::START)):
             $nextState = self::FUNCTION_KEYWORD;
-        elseif ($token->is(T_STRING) && $this->inState(self::FUNCTION_KEYWORD)):
+        elseif ($this->inState(self::FUNCTION_KEYWORD)):
             $nextState = self::FUNCTION_NAME;
         elseif ($token->getTokenName() === "(" && $this->inState(self::FUNCTION_NAME)):
             $nextState = self::PARAMETER_START;
         elseif (($token->is([T_STRING, T_VARIABLE]) || $token->getTokenName() === ',') && $this->inState(self::PARAMETER_START, self::PARAMETER_ARGUMENTS)):
+            $this->capturedArguments .= $token->text;
             $nextState = self::PARAMETER_ARGUMENTS;
         elseif ($token->getTokenName() === ")" && $this->inState(self::PARAMETER_ARGUMENTS, self::PARAMETER_START)):
             $nextState = self::PARAMETER_END;
         elseif (($token->is(T_STRING) || $token->getTokenName() === ':') && $this->inState(self::PARAMETER_END, self::FUNCTION_RETURN_TYPE)):
+            if($token->is(T_STRING)) {
+                $this->voidReturn = strtolower(trim($token->text)) === 'void';
+            }
             $nextState = self::FUNCTION_RETURN_TYPE;
         elseif ($token->getTokenName() === '{' && $this->inState(self::PARAMETER_END, self::FUNCTION_RETURN_TYPE)):
             $nextState = self::FUNCTION_START;
@@ -80,6 +81,7 @@ class TokenMachine
         $this->state = self::START;
         $this->stack = 0;
         $this->voidReturn = false;
+        $this->capturedArguments = "";
     }
 
     protected function checkStateAndReturnToken(int $previousState, int $nextState, \PhpToken $token): string
