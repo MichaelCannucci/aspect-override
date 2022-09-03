@@ -28,9 +28,9 @@ class Override {
      * @return callable Function to unregister the override
      */
     public static function before(string $class, string $method, callable $override): callable {
-        Instance::getInstance()->getClassRegistry()->set($class, $method, function ($execute, $args) use ($override) {
-            $newArgs = $override(...$args);
-            return $execute(...$newArgs);
+        Instance::getInstance()->getClassRegistry()->set($class, $method, function ($execute, &...$args) use ($override) {
+            $override(...$args);
+            return $execute(...$args);
         });
         return function () use ($class, $method) {
             Instance::getInstance()->getClassRegistry()->remove($class, $method);
@@ -44,7 +44,7 @@ class Override {
      * @return callable Function to unregister the override
      */
     public static function after(string $class, string $method, callable $override): callable {
-        Instance::getInstance()->getClassRegistry()->set($class, $method, function ($execute, $args) use ($override) {
+        Instance::getInstance()->getClassRegistry()->set($class, $method, function ($execute, ...$args) use ($override) {
             $result = $execute(...$args);
             return $override($result);
         });

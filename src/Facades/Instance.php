@@ -52,11 +52,15 @@ class Instance {
      * @param callable $execute
      * @return mixed
      */
-    public static function wrapAround(string $class, string $method, array $args, callable $execute) {
+    public static function wrapAround(string $class, string $method, array $args, callable $execute): array {
         $stub = function (callable $execute, $args) {
             return $execute(...$args);
         };
         $around = self::getInstance()->getClassRegistry()->get($class, $method) ?? $stub;
-        return $around($execute, $args);
+        // temporary holder for arguments while we mutate them
+        $tArgs = array_values($args);
+        $result = $around($execute, ...$tArgs);
+        // we need the original function names back for the 'extract' method to apply the arguments back
+        return [array_combine(array_keys($args), $tArgs), $result];
     }
 }

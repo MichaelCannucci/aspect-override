@@ -26,13 +26,16 @@ class ClassMethodProcessor extends AbstractProcessor {
         if (!$tokenizer) {
             $tokenizer = new Tokenizer(new TokenMachine([
                 TokenMachine::FUNCTION_START => function (\PhpToken $token, TokenMachine $machine) {
-                    return $token->text . ($machine->voidReturn ? '' : 'return ') .
+                    $argNames = explode(',', str_replace(['$', '&'], '',$machine->capturedArguments));
+                    $quotedNames = "'" . implode("','", $argNames) . "'";
+                    return $token->text .
                         /** @lang PHP */
-                        "\AspectOverride\Facades\Instance::wrapAround(" .
-                        "__CLASS__, __FUNCTION__, func_get_args(), function($machine->capturedArguments){";
+                        "list(\$args, \$result) = \AspectOverride\Facades\Instance::wrapAround(" .
+                        "__CLASS__, __FUNCTION__, compact($quotedNames), function($machine->capturedArguments){";
                 },
-                TokenMachine::FUNCTION_END => function (\PhpToken $token) {
-                    return $token->text . ');}';
+                TokenMachine::FUNCTION_END => function (\PhpToken $token, TokenMachine $machine) {
+                    $return = $machine->voidReturn ? '' : /** @lang PHP */ 'return $result';
+                    return $token->text . /** @lang PHP */"); extract(\$args, EXTR_OVERWRITE); $return;}";
                 }
             ]));
         }
