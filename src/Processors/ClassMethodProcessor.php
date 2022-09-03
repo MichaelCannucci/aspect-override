@@ -2,12 +2,8 @@
 
 namespace AspectOverride\Processors;
 
-use AspectOverride\Lexer\OnSequenceMatched;
-use AspectOverride\Lexer\SequenceGenerator;
-use AspectOverride\Lexer\SequenceRules;
-use AspectOverride\Lexer\Token\Capture;
-use AspectOverride\Lexer\Token\Special\MethodSignatureDeclaration;
-use AspectOverride\Lexer\Token\Token as T;
+use AspectOverride\Lexer\Tokenizer;
+use AspectOverride\Lexer\TokenMachine;
 
 class ClassMethodProcessor extends AbstractProcessor {
     public const NAME = 'aspect_mock_method_override';
@@ -20,53 +16,29 @@ class ClassMethodProcessor extends AbstractProcessor {
      * @return string
      */
     public function transform(string $data): string {
-        $lexer = New SequenceRules([
-            new SequenceGenerator([
-                T::anyOf(
-                    T::PRIVATE(), T::PROTECTED(), T::PUBLIC()
-                ),
-                T::capture(T::anyUntil(T::FUNCTION())),
-                T::capture(
-                    T::_and(
-                        T::anyUntilEmptyStack(
-                            T::OPENING_BRACKET(),
-                            T::CLOSING_BRACKET()
-                        ),
-                        T::not(new MethodSignatureDeclaration())
-                    )
-                )
-
-            ], new class implements OnSequenceMatched {
-                /** @param Capture[] $captures */
-                function __invoke(array $captures): array {
-                    $void = false;
-                    $merged = implode(
-                        ' ',
-                        array_map(function(Capture $capture) {return $capture->text;}, $captures)
-                    );
-                    $arguments = "";
-                    if(preg_match("/\((.*?)\)/", $merged, $matches)) {
-                        $arguments = $matches[1];
-                    }
-                    foreach ($captures as $capture) {
-                        if(!$void) {
-                            $void = in_array($capture->text, ['void',':void',':void{']);
-                        }
-                        if($capture->text === '{') {
-                            $capture->text .= ($void ? '' : 'return ') .
-                                "\AspectOverride\Facades\Instance::wrapAround(" .
-                                "__CLASS__, __FUNCTION__, func_get_args(), function($arguments){";
-                            break;
-                        }
-                    }
-                    $last = $captures[count($captures) - 1];
-                    $last->text .= ');}';
-                    return $captures;
-                }
-            })
-        ]);
-        return $lexer->transform($data);
+        return $this->getTokenizer()->transform($data);
     }
 
-    public function onNewFile(): void {}
+    protected function getTokenizer(): Tokenizer {
+        // stream user filter related thing, since the constructor isn't called we can't construct things normally
+        // hence the static variable
+        static $tokenizer;
+        if(!$tokenizer) {
+            $tokenizer = new Tokenizer(new TokenMachine([
+                TokenMachine::FUNCTION_START => function(\PhpToken $token, TokenMachine $machine) {
+                    return $token->text . ($machine->voidReturn ? '' : 'return ') .
+                        "\AspectOverride\Facades\Instance::wrapAround(" .
+                        "__CLASS__, __FUNCTION__, func_get_args(), function($machine->capturedArguments){";
+                },
+                TokenMachine::FUNCTION_END => function(\PhpToken $token) {
+                    return $token->text . ');}';
+                }
+            ]));
+        }
+        return $tokenizer;
+    }
+
+    public function onNewFile(): void {
+        $this->getTokenizer()->getMachine()->reset();
+    }
 }
