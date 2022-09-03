@@ -1,20 +1,18 @@
 <?php
 
-use AspectOverride\Token\OnSequenceMatched;
-use AspectOverride\Token\SequenceGenerator;
 use AspectOverride\Token\Tokenizer;
-use AspectOverride\Token\Token\Capture;
 use AspectOverride\Token\TokenMachine;
 
-it("transforms code when passing through the state machine", function() {
-    $tokenizer = new Tokenizer(new TokenMachine([
-        TokenMachine::FUNCTION_START => function(PhpToken $token): string {
-            return $token->text . ' START';
-        },
-        TokenMachine::FUNCTION_END => function(PhpToken $token): string {
-            return ' END ' . $token->text;
-        }
-    ]));
+$tokenizer = new Tokenizer(new TokenMachine([
+    TokenMachine::FUNCTION_START => function(PhpToken $token): string {
+        return $token->text . ' START';
+    },
+    TokenMachine::FUNCTION_END => function(PhpToken $token): string {
+        return 'END ' . $token->text;
+    }
+]));
+
+it("transforms code when passing through the state machine", function() use ($tokenizer) {
     expect($tokenizer->transform("
     class Test {
         public function testing() {}
@@ -26,15 +24,7 @@ it("transforms code when passing through the state machine", function() {
     ");
 });
 
-it("transforms code if function name is a reserved keyword", function() {
-    $tokenizer = new Tokenizer(new TokenMachine([
-        TokenMachine::FUNCTION_START => function(PhpToken $token): string {
-            return $token->text . ' START';
-        },
-        TokenMachine::FUNCTION_END => function(PhpToken $token): string {
-            return 'END ' . $token->text;
-        }
-    ]));
+it("transforms code if function name is a reserved keyword", function() use ($tokenizer) {
     expect($tokenizer->transform("
     class Test {
         public static function empty() {
@@ -48,15 +38,7 @@ it("transforms code if function name is a reserved keyword", function() {
     ");
 });
 
-it("transforms code when even if there is an function declaration", function() {
-    $tokenizer = new Tokenizer(new TokenMachine([
-        TokenMachine::FUNCTION_START => function(PhpToken $token): string {
-            return $token->text . ' START';
-        },
-        TokenMachine::FUNCTION_END => function(PhpToken $token): string {
-            return ' END ' . $token->text;
-        }
-    ]));
+it("transforms code when even if there is an function declaration", function() use ($tokenizer) {
     expect($tokenizer->transform("
     class Test {
         public function shouldDoSomething(\$a, int \$b) {}
