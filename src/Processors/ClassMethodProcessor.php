@@ -27,6 +27,7 @@ class ClassMethodProcessor extends AbstractProcessor {
             $tokenizer = new Tokenizer(new TokenMachine([
                 TokenMachine::FUNCTION_START => function(\PhpToken $token, TokenMachine $machine) {
                     return $token->text . ($machine->voidReturn ? '' : 'return ') .
+                        /** @lang PHP */
                         "\AspectOverride\Facades\Instance::wrapAround(" .
                         "__CLASS__, __FUNCTION__, func_get_args(), function($machine->capturedArguments){";
                 },

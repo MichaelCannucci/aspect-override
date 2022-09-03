@@ -27,6 +27,28 @@ it("transforms code when passing through the state machine", function() {
     ");
 });
 
+it("transforms code if function name is a reserved keyword", function() {
+    $tokenizer = new Tokenizer(new TokenMachine([
+        TokenMachine::FUNCTION_START => function(PhpToken $token): string {
+            return $token->text . ' START';
+        },
+        TokenMachine::FUNCTION_END => function(PhpToken $token): string {
+            return 'END ' . $token->text;
+        }
+    ]));
+    expect($tokenizer->transform("
+    class Test {
+        public static function empty() {
+        }
+    }
+    "))->toBe("
+    class Test {
+        public static function empty() { START
+        END }
+    }
+    ");
+});
+
 it("transforms code when even if there is an function declaration", function() {
     $tokenizer = new Tokenizer(new TokenMachine([
         TokenMachine::FUNCTION_START => function(PhpToken $token): string {
