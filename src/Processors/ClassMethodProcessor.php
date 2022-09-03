@@ -40,7 +40,9 @@ class ClassMethodProcessor extends AbstractProcessor {
                 },
                 TokenMachine::FUNCTION_END => function (\PhpToken $token, TokenMachine $machine) {
                     $return = $machine->voidReturn ? '' : /** @lang PHP */ 'return $result;';
-                    return $token->text . /** @lang PHP */"); if(\$args) { extract(\$args, EXTR_OVERWRITE); } $return }";
+                    $overwriteArguments = str_contains($machine->capturedArguments, '&') ?
+                        /** @lang PHP */ 'if($args) { extract($args, EXTR_OVERWRITE); }' : '';
+                    return $token->text . /** @lang PHP */ "); $overwriteArguments $return }";
                 }
             ]));
         }
