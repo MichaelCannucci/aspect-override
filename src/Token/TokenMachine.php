@@ -2,16 +2,17 @@
 
 namespace AspectOverride\Token;
 
-class TokenMachine {
-    public const START                = 1;
-    public const FUNCTION_KEYWORD     = 2;
-    public const FUNCTION_NAME        = 3;
-    public const PARAMETER_START      = 4;
-    public const PARAMETER_ARGUMENTS  = 5;
-    public const PARAMETER_END        = 6;
+class TokenMachine
+{
+    public const START = 1;
+    public const FUNCTION_KEYWORD = 2;
+    public const FUNCTION_NAME = 3;
+    public const PARAMETER_START = 4;
+    public const PARAMETER_ARGUMENTS = 5;
+    public const PARAMETER_END = 6;
     public const FUNCTION_RETURN_TYPE = 7;
-    public const FUNCTION_START       = 8;
-    public const FUNCTION_END         = 9;
+    public const FUNCTION_START = 8;
+    public const FUNCTION_END = 9;
 
     /**
      * @var bool
@@ -38,11 +39,13 @@ class TokenMachine {
     /**
      * @param callable[] $events
      */
-    public function __construct(array $events = []) {
+    public function __construct(array $events = [])
+    {
         $this->events = $events;
     }
 
-    public function process(\PhpToken $token): string {
+    public function process(\PhpToken $token): string
+    {
         if ($token->isIgnorable()) {
             return $token->text;
         }
@@ -62,32 +65,41 @@ class TokenMachine {
             return $token->text;
         }
 
-        if ($token->is(T_FUNCTION) && $this->inState(self::START, self::START)):
-            $nextState = self::FUNCTION_KEYWORD; elseif ($this->inState(self::FUNCTION_KEYWORD)):
-                $nextState = self::FUNCTION_NAME; elseif ($token->getTokenName() === "(" && $this->inState(self::FUNCTION_NAME)):
-                    $nextState = self::PARAMETER_START; elseif (($token->is([T_STRING, T_VARIABLE]) || $token->getTokenName() === ',') && $this->inState(self::PARAMETER_START, self::PARAMETER_ARGUMENTS)):
-                        $this->capturedArguments .= $token->text;
-                        $nextState = self::PARAMETER_ARGUMENTS; elseif ($token->getTokenName() === ")" && $this->inState(self::PARAMETER_ARGUMENTS, self::PARAMETER_START)):
-                            $nextState = self::PARAMETER_END; elseif (($token->is(T_STRING) || $token->getTokenName() === ':') && $this->inState(self::PARAMETER_END, self::FUNCTION_RETURN_TYPE)):
-                                if ($token->is(T_STRING)) {
-                                    $this->voidReturn = strtolower(trim($token->text)) === 'void';
-                                }
-                                $nextState = self::FUNCTION_RETURN_TYPE; elseif ($token->getTokenName() === '{' && $this->inState(self::PARAMETER_END, self::FUNCTION_RETURN_TYPE)):
-                                    $nextState = self::FUNCTION_START;
-                                    $this->stack = 1; else:
-                                        $nextState = self::START;
-                                    endif;
+        if ($token->is(T_FUNCTION) && $this->inState(self::START, self::START)) {
+            $nextState = self::FUNCTION_KEYWORD;
+        } elseif ($this->inState(self::FUNCTION_KEYWORD)) {
+            $nextState = self::FUNCTION_NAME;
+        } elseif ($token->is("(") && $this->inState(self::FUNCTION_NAME)) {
+            $nextState = self::PARAMETER_START;
+        } elseif (($token->is([T_STRING, T_VARIABLE, ',', '&'])) && $this->inState(self::PARAMETER_START, self::PARAMETER_ARGUMENTS)) {
+            $this->capturedArguments .= $token->text;
+            $nextState = self::PARAMETER_ARGUMENTS;
+        } elseif ($token->is(")") && $this->inState(self::PARAMETER_ARGUMENTS, self::PARAMETER_START)) {
+            $nextState = self::PARAMETER_END;
+        } elseif ($token->is([T_STRING, ':']) && $this->inState(self::PARAMETER_END, self::FUNCTION_RETURN_TYPE)) {
+            if ($token->is(T_STRING)) {
+                $this->voidReturn = strtolower(trim($token->text)) === 'void';
+            }
+            $nextState = self::FUNCTION_RETURN_TYPE;
+        } elseif ($token->is('{') && $this->inState(self::PARAMETER_END, self::FUNCTION_RETURN_TYPE)) {
+            $nextState = self::FUNCTION_START;
+            $this->stack = 1;
+        } else {
+            $nextState = self::START;
+        }
         return $this->checkStateAndReturnToken($this->state, $nextState, $token);
     }
 
-    public function reset(): void {
+    public function reset(): void
+    {
         $this->state = self::START;
         $this->stack = 0;
         $this->voidReturn = false;
         $this->capturedArguments = "";
     }
 
-    protected function checkStateAndReturnToken(int $previousState, int $nextState, \PhpToken $token): string {
+    protected function checkStateAndReturnToken(int $previousState, int $nextState, \PhpToken $token): string
+    {
         if ($previousState !== $nextState) {
             $this->state = $nextState;
             if (array_key_exists($nextState, $this->events)) {
@@ -97,7 +109,8 @@ class TokenMachine {
         return $token->text;
     }
 
-    private function inState(int ...$states): bool {
+    private function inState(int ...$states): bool
+    {
         return in_array($this->state, $states);
     }
 }
