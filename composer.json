@@ -25,7 +25,7 @@
         "test": "vendor/bin/pest",
         "check": "vendor/bin/phpstan -l8 analyse src/",
         "coverage": "vendor/bin/phpunit --coverage-html html",
-        "cs-fixer": "tools/php-cs-fixer/vendor/bin/php-cs-fixer fix"
+        "cs-fixer": "tools/php-cs-fixer/vendor/bin/php-cs-fixer fix --config=tools/php-cs-fixer/php-cs-fixer.php"
     },
     "config": {
         "allow-plugins": {

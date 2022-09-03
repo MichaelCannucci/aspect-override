@@ -5,7 +5,6 @@ namespace AspectOverride\Token;
 use PhpToken;
 
 class Tokenizer {
-
     /**
      * @var TokenMachine
      */
@@ -21,7 +20,9 @@ class Tokenizer {
         $buffer = [];
         $temporary = $this->requiresTemporaryOpenTag($code);
         $tokens = PhpToken::tokenize(($temporary ? "<?php " : "") . $code);
-        if($temporary) { array_shift($tokens); }
+        if ($temporary) {
+            array_shift($tokens);
+        }
         foreach ($tokens as $index => $token) {
             $buffer[$index] = $this->machine->process($token);
         }

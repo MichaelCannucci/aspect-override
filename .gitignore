@@ -19,4 +19,8 @@ Desktop.ini
 # coverage
 html
 
+# Php CS Fixer
+tools/php-cs-fixer/vendor
+
+# Test Generation
 tmp

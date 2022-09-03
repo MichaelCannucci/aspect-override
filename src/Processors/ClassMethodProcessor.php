@@ -23,15 +23,15 @@ class ClassMethodProcessor extends AbstractProcessor {
         // stream user filter related thing, since the constructor isn't called we can't construct things normally
         // hence the static variable
         static $tokenizer;
-        if(!$tokenizer) {
+        if (!$tokenizer) {
             $tokenizer = new Tokenizer(new TokenMachine([
-                TokenMachine::FUNCTION_START => function(\PhpToken $token, TokenMachine $machine) {
+                TokenMachine::FUNCTION_START => function (\PhpToken $token, TokenMachine $machine) {
                     return $token->text . ($machine->voidReturn ? '' : 'return ') .
                         /** @lang PHP */
                         "\AspectOverride\Facades\Instance::wrapAround(" .
                         "__CLASS__, __FUNCTION__, func_get_args(), function($machine->capturedArguments){";
                 },
-                TokenMachine::FUNCTION_END => function(\PhpToken $token) {
+                TokenMachine::FUNCTION_END => function (\PhpToken $token) {
                     return $token->text . ');}';
                 }
             ]));

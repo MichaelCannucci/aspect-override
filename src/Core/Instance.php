@@ -3,7 +3,6 @@
 namespace AspectOverride\Core;
 
 class Instance {
-
     /** @var Configuration */
     protected $config;
     /** @var StreamInterceptor */

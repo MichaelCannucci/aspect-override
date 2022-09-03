@@ -105,15 +105,15 @@ class FunctionProcessor extends AbstractProcessor {
     }
 
     protected function functionExists(string $function): bool {
-      if(function_exists($function)) {
-        return true;
-      }
-      foreach ($this->namespaces as $namespace) {
-        if(function_exists($namespace . '\\' . $function)) {
-          return true;
+        if (function_exists($function)) {
+            return true;
         }
-      }
-      return false;
+        foreach ($this->namespaces as $namespace) {
+            if (function_exists($namespace . '\\' . $function)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

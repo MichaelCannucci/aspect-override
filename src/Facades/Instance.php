@@ -40,7 +40,9 @@ class Instance {
      * @return mixed
      */
     public static function wrapAround(string $class, string $method, array $args, callable $execute) {
-        $stub = function(callable $execute, $args) { return $execute(...$args); };
+        $stub = function (callable $execute, $args) {
+            return $execute(...$args);
+        };
         $around = self::getInstance()->getClassRegistry()->get($class, $method) ?? $stub;
         return $around($execute, $args);
     }
