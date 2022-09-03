@@ -1,6 +1,6 @@
 <?php
 
-namespace AspectOverride\Lexer;
+namespace AspectOverride\Token;
 
 class TokenMachine
 {
@@ -14,10 +14,21 @@ class TokenMachine
     public const FUNCTION_START       = 8;
     public const FUNCTION_END         = 9;
 
+    /**
+     * @var bool
+     */
     public $voidReturn = false;
+    /**
+     * @var string
+     */
     public $capturedArguments = "";
-
+    /**
+     * @var int
+     */
     private $state = self::START;
+    /**
+     * @var int
+     */
     private $stack = 0;
 
     /**
@@ -25,6 +36,9 @@ class TokenMachine
      */
     private $events;
 
+    /**
+     * @param callable[] $events
+     */
     public function __construct(array $events = [])
     {
         $this->events = $events;
@@ -76,7 +90,7 @@ class TokenMachine
         return $this->checkStateAndReturnToken($this->state, $nextState, $token);
     }
 
-    public function reset()
+    public function reset(): void
     {
         $this->state = self::START;
         $this->stack = 0;

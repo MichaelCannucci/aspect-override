@@ -2,8 +2,8 @@
 
 namespace AspectOverride\Processors;
 
-use AspectOverride\Lexer\Tokenizer;
-use AspectOverride\Lexer\TokenMachine;
+use AspectOverride\Token\Tokenizer;
+use AspectOverride\Token\TokenMachine;
 
 class ClassMethodProcessor extends AbstractProcessor {
     public const NAME = 'aspect_mock_method_override';

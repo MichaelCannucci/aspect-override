@@ -34,6 +34,9 @@ class Instance {
 
     /**
      * @param class-string $class
+     * @param string $method
+     * @param mixed[] $args
+     * @param callable $execute
      * @return mixed
      */
     public static function wrapAround(string $class, string $method, array $args, callable $execute) {

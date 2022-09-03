@@ -1,11 +1,10 @@
 <?php
 
-use AspectOverride\Lexer\OnSequenceMatched;
-use AspectOverride\Lexer\SequenceGenerator;
-use AspectOverride\Lexer\Tokenizer;
-use AspectOverride\Lexer\Token\Capture;
-use AspectOverride\Lexer\Token\Token as T;
-use AspectOverride\Lexer\TokenMachine;
+use AspectOverride\Token\OnSequenceMatched;
+use AspectOverride\Token\SequenceGenerator;
+use AspectOverride\Token\Tokenizer;
+use AspectOverride\Token\Token\Capture;
+use AspectOverride\Token\TokenMachine;
 
 it("transforms code when passing through the state machine", function() {
     $tokenizer = new Tokenizer(new TokenMachine([

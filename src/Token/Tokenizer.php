@@ -1,6 +1,6 @@
 <?php
 
-namespace AspectOverride\Lexer;
+namespace AspectOverride\Token;
 
 use PhpToken;
 
