@@ -5,7 +5,7 @@ namespace AspectOverride\Processors;
 class FunctionProcessor extends AbstractProcessor {
     public const NAME = 'aspect_mock_function_override';
 
-    public const PATTERN = '/(function )?(\w+)(\()/';
+    public const PATTERN = '/(function |new )?(\w+)(\()/i';
 
     public const NAMESPACE_PATTERN = '/namespace (.+)(;| {)/m';
 
@@ -46,11 +46,16 @@ class FunctionProcessor extends AbstractProcessor {
             $this->namespaces = $found[1];
         }
         return (string)preg_replace_callback(self::PATTERN, function ($m) {
-            $function = $m[2];
-            if (!array_key_exists($function, self::DENY_LIST) && $this->functionExists($function)) {
+            [$original, $before, $function, $after] = $m;
+            if (
+                !array_key_exists($function, self::DENY_LIST)
+                && !in_array(trim(mb_convert_case($before, MB_CASE_LOWER)), ['function', 'new'])
+                && $this->functionExists($function)
+            ) {
                 $function = $this->loadPatchedFunction($function);
+                return $before . $function . $after;
             }
-            return $m[1] . $function . $m[3];
+            return $original;
         }, $data);
     }
 
