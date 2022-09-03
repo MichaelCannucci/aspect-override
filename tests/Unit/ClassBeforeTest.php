@@ -60,7 +60,6 @@ it('respects pass by ref', function () {
     sandbox(
         static function () {
             Override::before("Test", 'doThingToRef', function ($a) {
-                // Since 'extract' is what sets the variables, we don't have to modify the reference ourselves
                 return [3];
             });
         },
