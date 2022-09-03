@@ -177,3 +177,18 @@ it('can overwrite final function', function () {
         }
     )->toBe(3);
 });
+
+it('can execute non overwritten functions', function () {
+    sandbox(
+        static function () {},
+        static function () {
+            class TestClass {
+                final public function returnTwo(): int {
+                    return 2;
+                }
+            }
+            /** @noinspection PhpVoidFunctionResultUsedInspection */
+            echo (new TestClass())->returnTwo();
+        }
+    )->toBe(2);
+});
