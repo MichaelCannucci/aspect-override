@@ -37,23 +37,9 @@ class StreamInterceptor {
      * */
     protected static $streamProcessors;
 
-    /**
-     * @var Configuration
-     * */
-    protected static $configuration;
-
-    /**
-     * @param AbstractProcessor[] $streamProcessors
-     */
-    public function __construct(Configuration $configuration = null, array $streamProcessors = null) {
-        if ($configuration) {
-            self::$configuration = $configuration;
-        }
-        if ($streamProcessors) {
-            self::$streamProcessors = $streamProcessors;
-        }
+    public function __construct() {
         if (empty($streamProcessors)) {
-            self::$streamProcessors = $streamProcessors ?: [
+            self::$streamProcessors = [
                 new FunctionProcessor(),
                 new ClassMethodProcessor()
             ];
@@ -85,13 +71,13 @@ class StreamInterceptor {
     }
 
     protected function shouldProcess(string $uri): bool {
-        $excludedDirectories = self::$configuration->getExcludedDirectories();
+        $excludedDirectories = \AspectOverride\Facades\Instance::getConfiguration()->getExcludedDirectories();
         foreach ($excludedDirectories as $excluded) {
             if ($this->isPhpFile($uri) && false !== strpos($uri, $excluded)) {
                 return false;
             }
         }
-        $allowedDirectories = self::$configuration->getDirectories();
+        $allowedDirectories = \AspectOverride\Facades\Instance::getConfiguration()->getDirectories();
         foreach ($allowedDirectories as $directory) {
             if ($this->isPhpFile($uri) && false !== strpos($uri, $directory)) {
                 return true;
