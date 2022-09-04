@@ -27,7 +27,7 @@ abstract class AbstractProcessor extends \php_user_filter {
         $this->onNewFile();
         while ($bucket = stream_bucket_make_writeable($in)) {
             /** @var \stdClass $bucket */
-            $bucket->data = $this->transform($this->removeComments($bucket->data));
+            $bucket->data = $this->transform($bucket->data);
             $consumed += $bucket->datalen;
             Instance::debugDump($bucket->data);
             stream_bucket_append($out, $bucket);
@@ -46,13 +46,6 @@ abstract class AbstractProcessor extends \php_user_filter {
                 throw new \RuntimeException(sprintf('Failed registering stream filter "%s" on stream "%s"', static::class, static::NAME));
             }
         }
-    }
-
-    /**
-     * Comments might be picked up the code transformers and produce invalid results
-     */
-    private function removeComments(string $data): string {
-        return (string)preg_replace('/(\/\/|#).+/', '//', $data);
     }
 
     abstract public function transform(string $data): string;
