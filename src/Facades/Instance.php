@@ -7,6 +7,10 @@ use AspectOverride\Core\Instance as CoreInstance;
 
 /**
  * @method static Configuration getConfiguration()
+ * @method static bool shouldProcess(string $uri)
+ * @method static void dump(string $data)
+ * @method static callable|null getForFunction(string $fn)
+ * @method static callable|null wrapAround(string $class, string $method, array $args, callable $execute)
  */
 class Instance {
     /** @var \AspectOverride\Core\Instance|null */
@@ -21,6 +25,10 @@ class Instance {
         return self::getInstance()->$name(...$arguments);
     }
 
+    public static function setInstance(?CoreInstance $instance): void {
+        self::$instance = $instance;
+    }
+
     public static function getInstance(): CoreInstance {
         if (!self::$instance) {
             throw new \RuntimeException("aspect-override has not been initalized, call AspectOverride\Facades\Instance::initialize()");
@@ -28,39 +36,9 @@ class Instance {
         return self::$instance;
     }
 
-    public static function debugDump($data): void {
-        if($path = Instance::getConfiguration()->getDebugDump()) {
-            $name = md5($data);
-            file_put_contents("$path/$name.php", $data);
-        }
-    }
-
     public static function initialize(Configuration $configuration): void {
         self::$instance = new CoreInstance($configuration);
         self::$instance->reset();
         self::$instance->start();
-    }
-
-    public static function getForFunction(string $fn): ?callable {
-        return self::getInstance()->getFunctionRegistry()->get($fn);
-    }
-
-    /**
-     * @param class-string $class
-     * @param string $method
-     * @param mixed[] $args
-     * @param callable $execute
-     * @return mixed
-     */
-    public static function wrapAround(string $class, string $method, array $args, callable $execute): array {
-        $stub = function (callable $execute, ...$args) {
-            return $execute(...$args);
-        };
-        $around = self::getInstance()->getClassRegistry()->get($class, $method) ?? $stub;
-        // temporary holder for arguments while we mutate them
-        $tArgs = array_values($args);
-        $result = $around($execute, ...$tArgs);
-        // we need the original argument names back for the 'extract' method to apply the arguments back
-        return [array_combine(array_keys($args), $tArgs), $result];
     }
 }
