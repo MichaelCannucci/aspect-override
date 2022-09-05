@@ -2,8 +2,7 @@
 
 namespace AspectOverride\Processors;
 
-class FunctionProcessor extends AbstractProcessor {
-    public const NAME = 'aspect_mock_function_override';
+class FunctionProcessor implements CodeProcessorInterface {
 
     public const PATTERN = '/(function |new )?(\w+)(\()/i';
 

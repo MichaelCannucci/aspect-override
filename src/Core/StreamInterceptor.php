@@ -2,11 +2,8 @@
 
 namespace AspectOverride\Core;
 
-use AspectOverride\Processors\AbstractProcessor;
-use AspectOverride\Processors\ClassMethodProcessor;
-use AspectOverride\Processors\FunctionProcessor;
-use Exception;
-use RuntimeException;
+use AspectOverride\Facades\Instance;
+use AspectOverride\Processors\PhpUserFilter;
 
 /**
  * Implementation adapted from:
@@ -33,20 +30,15 @@ class StreamInterceptor {
     public $context;
 
     /**
-     * @var AbstractProcessor[]
+     * @var PhpUserFilter
      * */
-    protected static $streamProcessors;
+    protected static $streamProcessor;
 
     public function __construct() {
         if (empty($streamProcessors)) {
-            self::$streamProcessors = [
-                new FunctionProcessor(),
-                new ClassMethodProcessor()
-            ];
+            self::$streamProcessor = new PhpUserFilter;
         }
-        foreach (self::$streamProcessors as $streamProcessors) {
-            $streamProcessors->register();
-        }
+        self::$streamProcessor->register();
     }
 
     public function intercept(): void {
@@ -61,29 +53,6 @@ class StreamInterceptor {
     public function restore(): void {
         stream_wrapper_unregister(self::PROTOCOL);
         stream_wrapper_restore(self::PROTOCOL);
-    }
-
-    /**
-     * Determines that the provided uri leads to a PHP file.
-     */
-    protected function isPhpFile(string $uri): bool {
-        return 'php' === pathinfo($uri, PATHINFO_EXTENSION);
-    }
-
-    protected function shouldProcess(string $uri): bool {
-        $excludedDirectories = \AspectOverride\Facades\Instance::getConfiguration()->getExcludedDirectories();
-        foreach ($excludedDirectories as $excluded) {
-            if ($this->isPhpFile($uri) && false !== strpos($uri, $excluded)) {
-                return false;
-            }
-        }
-        $allowedDirectories = \AspectOverride\Facades\Instance::getConfiguration()->getDirectories();
-        foreach ($allowedDirectories as $directory) {
-            if ($this->isPhpFile($uri) && false !== strpos($uri, $directory)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -114,10 +83,9 @@ class StreamInterceptor {
                 $this->resource = fopen($path, $mode, (bool)($options & STREAM_USE_PATH));
             }
 
-            if (false !== $this->resource && $options & self::STREAM_OPEN_FOR_INCLUDE && $this->shouldProcess($path)) {
-                foreach (self::$streamProcessors as $streamProcessors) {
-                    stream_filter_append($this->resource, $streamProcessors::NAME, \STREAM_FILTER_READ);
-                }
+            if (false !== $this->resource && $options & self::STREAM_OPEN_FOR_INCLUDE && Instance::shouldProcess($path)) {
+                self::$streamProcessor->onNewFile();
+                stream_filter_append($this->resource, self::$streamProcessor::NAME, \STREAM_FILTER_READ);
             }
 
             $this->intercept();
@@ -227,7 +195,7 @@ class StreamInterceptor {
             return false;
         }
 
-        if (!$this->shouldProcess(stream_get_meta_data($this->resource)['uri'])) {
+        if (!Instance::shouldProcess(stream_get_meta_data($this->resource)['uri'])) {
             return fstat($this->resource);
         }
 
