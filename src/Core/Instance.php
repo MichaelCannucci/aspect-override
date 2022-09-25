@@ -2,6 +2,8 @@
 
 namespace AspectOverride\Core;
 
+use AspectOverride\Utility\FilePaths;
+
 class Instance {
     /** @var Configuration */
     protected $config;
@@ -84,26 +86,23 @@ class Instance {
         return [array_combine(array_keys($args), $tArgs), $result];
     }
 
-    public function shouldProcess(string $uri): bool {
-        $uri = realpath($uri);
-        $excludedDirectories = \AspectOverride\Facades\Instance::getConfiguration()->getExcludedDirectories();
-        foreach ($excludedDirectories as $excluded) {
-            if ($this->isPhpFile($uri) && false !== strpos($uri, $excluded)) {
-                return false;
-            }
+    public function shouldProcess(string $path): bool {
+        $path = FilePaths::almostRealPath($path);
+        if($this->isInDirectories($this->getConfiguration()->getExcludedDirectories(), $path)) {
+            return false;
         }
-        $allowedDirectories = \AspectOverride\Facades\Instance::getConfiguration()->getDirectories();
-        foreach ($allowedDirectories as $directory) {
-            if ($this->isPhpFile($uri) && false !== strpos($uri, $directory)) {
+        return $this->isInDirectories($this->getConfiguration()->getDirectories(), $path);
+    }
+
+    protected function isInDirectories(array $paths, string $path): bool {
+        foreach ($paths as $directory) {
+            if ($this->isPhpFile($path) && false !== str_starts_with($path, $directory)) {
                 return true;
             }
         }
         return false;
     }
 
-    /**
-     * Determines that the provided uri leads to a PHP file.
-     */
     private function isPhpFile(string $uri): bool {
         return 'php' === pathinfo($uri, PATHINFO_EXTENSION);
     }
