@@ -55,7 +55,7 @@ class Instance {
     }
 
     public function dump($data): void {
-        if($path = \AspectOverride\Facades\Instance::getConfiguration()->getDebugDump()) {
+        if($path = $this->getConfiguration()->getDebugDump()) {
             $name = md5($data);
             file_put_contents("$path/$name.php", $data);
         }

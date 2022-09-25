@@ -2,7 +2,7 @@
 
 namespace AspectOverride;
 
-use AspectOverride\Facades\Instance;
+use AspectOverride\Facades\AspectOverride;
 
 class Override {
     /**
@@ -12,12 +12,12 @@ class Override {
      * @return callable Function to unregister the override
      */
     public static function method(string $class, string $method, callable $override): callable {
-        Instance::getInstance()->getClassRegistry()->set($class, $method, function ($execute, ...$args) use ($override) {
+        AspectOverride::getInstance()->getClassRegistry()->set($class, $method, function ($execute, ...$args) use ($override) {
             // Ignore original
             return $override(...$args);
         });
         return function () use ($class, $method) {
-            Instance::getInstance()->getClassRegistry()->remove($class, $method);
+            AspectOverride::getInstance()->getClassRegistry()->remove($class, $method);
         };
     }
 
@@ -28,12 +28,12 @@ class Override {
      * @return callable Function to unregister the override
      */
     public static function before(string $class, string $method, callable $override): callable {
-        Instance::getInstance()->getClassRegistry()->set($class, $method, function ($execute, &...$args) use ($override) {
+        AspectOverride::getInstance()->getClassRegistry()->set($class, $method, function ($execute, &...$args) use ($override) {
             $override(...$args);
             return $execute(...$args);
         });
         return function () use ($class, $method) {
-            Instance::getInstance()->getClassRegistry()->remove($class, $method);
+            AspectOverride::getInstance()->getClassRegistry()->remove($class, $method);
         };
     }
 
@@ -44,12 +44,12 @@ class Override {
      * @return callable Function to unregister the override
      */
     public static function after(string $class, string $method, callable $override): callable {
-        Instance::getInstance()->getClassRegistry()->set($class, $method, function ($execute, ...$args) use ($override) {
+        AspectOverride::getInstance()->getClassRegistry()->set($class, $method, function ($execute, ...$args) use ($override) {
             $result = $execute(...$args);
             return $override($result);
         });
         return function () use ($class, $method) {
-            Instance::getInstance()->getClassRegistry()->remove($class, $method);
+            AspectOverride::getInstance()->getClassRegistry()->remove($class, $method);
         };
     }
 
@@ -60,9 +60,9 @@ class Override {
      * @return callable Function to unregister the override
      */
     public static function function(string $fn, callable $override): callable {
-        Instance::getInstance()->getFunctionRegistry()->set($fn, $override);
+        AspectOverride::getInstance()->getFunctionRegistry()->set($fn, $override);
         return function () use ($fn) {
-            Instance::getInstance()->getFunctionRegistry()->remove($fn);
+            AspectOverride::getInstance()->getFunctionRegistry()->remove($fn);
         };
     }
 
@@ -71,6 +71,6 @@ class Override {
      * @return void
      */
     public static function reset(): void {
-        Instance::getInstance()->resetRegistry();
+        AspectOverride::getInstance()->resetRegistry();
     }
 }

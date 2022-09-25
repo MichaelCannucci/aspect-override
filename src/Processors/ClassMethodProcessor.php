@@ -2,19 +2,19 @@
 
 namespace AspectOverride\Processors;
 
-use AspectOverride\Token\Tokenizer;
+use AspectOverride\Token\TokenStream;
 use AspectOverride\Token\TokenMachine;
 
 class ClassMethodProcessor implements CodeProcessorInterface {
 
     /**
-     * @var Tokenizer
+     * @var TokenStream
      */
     protected $tokenizer;
 
     public function __construct()
     {
-        $this->tokenizer = new Tokenizer(new TokenMachine([
+        $this->tokenizer = new TokenStream(new TokenMachine([
             TokenMachine::FUNCTION_START => function (\PhpToken $token, TokenMachine $machine) {
                 if($machine->capturedArguments) {
                     $argNames = explode(',', str_replace(['$', '&'], '',$machine->capturedArguments));
@@ -25,7 +25,7 @@ class ClassMethodProcessor implements CodeProcessorInterface {
                 }
                 return $token->text .
                     /** @lang PHP */
-                    "list(\$args, \$result) = \AspectOverride\Facades\Instance::wrapAround(" .
+                    "list(\$args, \$result) = \AspectOverride\Facades\AspectOverride::wrapAround(" .
                     "__CLASS__, __FUNCTION__, $gatherArgs, function($machine->capturedArguments){";
             },
             TokenMachine::FUNCTION_END => function (\PhpToken $token, TokenMachine $machine) {

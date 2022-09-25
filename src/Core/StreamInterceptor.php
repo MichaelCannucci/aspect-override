@@ -2,7 +2,7 @@
 
 namespace AspectOverride\Core;
 
-use AspectOverride\Facades\Instance;
+use AspectOverride\Facades\AspectOverride;
 use AspectOverride\Processors\PhpUserFilter;
 
 /**
@@ -83,7 +83,7 @@ class StreamInterceptor {
                 $this->resource = fopen($path, $mode, (bool)($options & STREAM_USE_PATH));
             }
 
-            if (false !== $this->resource && $options & self::STREAM_OPEN_FOR_INCLUDE && Instance::shouldProcess($path)) {
+            if (false !== $this->resource && $options & self::STREAM_OPEN_FOR_INCLUDE && AspectOverride::shouldProcess($path)) {
                 self::$streamProcessor->onNewFile();
                 stream_filter_append($this->resource, self::$streamProcessor::NAME, \STREAM_FILTER_READ);
             }
@@ -95,7 +95,7 @@ class StreamInterceptor {
             throw new \RuntimeException(
                 "Unexpected error occurred when transforming file, " .
                 "try excluding '$path' and rerunning tests " .
-                "\n\noriginal error: " . $throwable->getMessage()
+                "original error: " . $throwable->getMessage()
             );
         }
     }
@@ -195,7 +195,7 @@ class StreamInterceptor {
             return false;
         }
 
-        if (!Instance::shouldProcess(stream_get_meta_data($this->resource)['uri'])) {
+        if (!AspectOverride::shouldProcess(stream_get_meta_data($this->resource)['uri'])) {
             return fstat($this->resource);
         }
 

@@ -62,12 +62,13 @@ class FunctionProcessor implements CodeProcessorInterface {
         $uniqueName = $name . '_' . md5($name);
         foreach (($this->namespaces ?: ['']) as $namespace) {
             [$parameters, $passed] = $this->getOriginalParameters($namespace, $name);
-            $code = /** @lang PHP */ "
+            $code = /** @lang PHP */
+                "
               namespace $namespace {
                if(!function_exists('$namespace\\$uniqueName')) {
                  function {$uniqueName}($parameters) {
-                   \$__fn__ =  \AspectOverride\Facades\Instance::getForFunction('$namespace\\$name') ?: 
-                      \AspectOverride\Facades\Instance::getForFunction('$name') ?: null; 
+                   \$__fn__ =  \AspectOverride\Facades\AspectOverride::getForFunction('$namespace\\$name') ?: 
+                      \AspectOverride\Facades\AspectOverride::getForFunction('$name') ?: null; 
                    if(\$__fn__) {
                      return \$__fn__($passed);
                    }

@@ -2,7 +2,7 @@
 
 namespace AspectOverride\Processors;
 
-use AspectOverride\Facades\Instance;
+use AspectOverride\Facades\AspectOverride;
 
 /**
  * Implementation heavily inspired from:
@@ -41,7 +41,7 @@ class PhpUserFilter extends \php_user_filter {
                 $bucket->data = $processor->transform($bucket->data);
             }
             $consumed += $bucket->datalen;
-            Instance::dump($bucket->data);
+            AspectOverride::dump($bucket->data);
             stream_bucket_append($out, $bucket);
         }
         return \PSFS_PASS_ON;
