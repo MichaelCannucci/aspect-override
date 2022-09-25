@@ -1,9 +1,9 @@
 <?php
 
-use AspectOverride\Token\Tokenizer;
+use AspectOverride\Token\TokenStream;
 use AspectOverride\Token\TokenMachine;
 
-$tokenizer = new Tokenizer(new TokenMachine([
+$tokenizer = new TokenStream(new TokenMachine([
     TokenMachine::FUNCTION_START => function(PhpToken $token): string {
         return $token->text . ' START';
     },

@@ -5,32 +5,28 @@ namespace Tests\Integration;
 use AspectOverride\Override;
 
 it('can overwrite public functions', function () {
+    Override::method("TestPublicFunctions", "returnTwo", function () {
+        return 3;
+    });
     sandbox(
         static function () {
-            Override::method("Test", "returnTwo", function () {
-                return 3;
-            });
-        },
-        static function () {
-            class Test {
+            class TestPublicFunctions {
                 public function returnTwo(): int {
                     return 2;
                 }
             }
-            echo (new Test())->returnTwo();
+            echo (new TestPublicFunctions())->returnTwo();
         }
     )->toBe(3);
 });
 
 it('can overwrite private functions', function () {
+    Override::method("TestPrivateFunctions", "returnTwo", function () {
+        return 3;
+    });
     sandbox(
         static function () {
-            Override::method("Test", "returnTwo", function () {
-                return 3;
-            });
-        },
-        static function () {
-            class Test {
+            class TestPrivateFunctions {
                 private function returnTwo(): int {
                     return 2;
                 }
@@ -38,36 +34,35 @@ it('can overwrite private functions', function () {
                     return $this->returnTwo();
                 }
             }
-            echo (new Test())->callReturnTwo();
+            echo (new TestPrivateFunctions())->callReturnTwo();
         }
     )->toBe(3);
 });
 
 it('can overwrite void return functions', function () {
+    $called = false;
+    Override::method("Test", 'voidReturn', function (&$called) {
+        //Note: If the injection points try to return anything this will fail
+        $called = true;
+    });
     sandbox(
         static function () {
-            Override::method("Test", 'voidReturn', function () {
-                // If the injection points try to return anything this will fail
-            });
-        },
-        static function () {
-            class Test {
+            class TestVoidFunctionReturn {
                 public function voidReturn(): void {
                 }
             }
-            echo "void!";
-            (new Test())->voidReturn();
+            (new TestVoidFunctionReturn())->voidReturn();
         }
-    )->toBe("void!");
+    );
+    /** @noinspection PhpConditionAlreadyCheckedInspection Override method is called */
+    expect($called)->toBeTrue();
 });
 
 it('can overwrite protected function', function () {
+    Override::method("Test", "returnTwo", function () {
+        return 3;
+    });
     sandbox(
-        static function () {
-            Override::method("Test", "returnTwo", function () {
-                return 3;
-            });
-        },
         static function () {
             class Test {
                 protected function returnTwo(): int {
@@ -83,12 +78,10 @@ it('can overwrite protected function', function () {
 });
 
 it('can overwrite static function', function () {
+    Override::method("Test", "returnTwo", function () {
+        return 3;
+    });
     sandbox(
-        static function () {
-            Override::method("Test", "returnTwo", function () {
-                return 3;
-            });
-        },
         static function () {
             class Test {
                 public static function returnTwo(): int {
@@ -101,12 +94,10 @@ it('can overwrite static function', function () {
 });
 
 it('can overwrite function with no whitespace in body', function () {
+    Override::method("Test", "noWhitespace", function () {
+        return 3;
+    });
     sandbox(
-        static function () {
-            Override::method("Test", "noWhitespace", function () {
-                return 3;
-            });
-        },
         static function () {
             class Test {
                 public static function noWhitespace() {
@@ -119,12 +110,10 @@ it('can overwrite function with no whitespace in body', function () {
 });
 
 it('can overwrite empty function', function () {
+    Override::method("Test", "empty", function () {
+        return 3;
+    });
     sandbox(
-        static function () {
-            Override::method("Test", "empty", function () {
-                return 3;
-            });
-        },
         static function () {
             class Test {
                 public static function empty() {
@@ -137,12 +126,10 @@ it('can overwrite empty function', function () {
 });
 
 it('can overwrite abstract function', function () {
+    Override::method("AbstractClassImplementation", "returnTwo", function () {
+        return 3;
+    });
     sandbox(
-        static function () {
-            Override::method("AbstractClassImplementation", "returnTwo", function () {
-                return 3;
-            });
-        },
         static function () {
             abstract class AbstractClass {
                 abstract public function returnTwo(): int;
@@ -160,12 +147,10 @@ it('can overwrite abstract function', function () {
 });
 
 it('can overwrite final function', function () {
+    Override::method("AbstractClassImplementation", "returnTwo", function () {
+        return 3;
+    });
     sandbox(
-        static function () {
-            Override::method("AbstractClassImplementation", "returnTwo", function () {
-                return 3;
-            });
-        },
         static function () {
             class AbstractClassImplementation {
                 final public function returnTwo(): int {
@@ -180,7 +165,6 @@ it('can overwrite final function', function () {
 
 it('can execute non overwritten functions', function () {
     sandbox(
-        static function () {},
         static function () {
             class TestClass {
                 final public function returnTwo(): int {

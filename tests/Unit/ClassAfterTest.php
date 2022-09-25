@@ -2,55 +2,53 @@
 
 use AspectOverride\Override;
 
+beforeEach(function() {
+    Override::reset();
+});
+
 it('can overwrite function return', function () {
+    Override::after("TestOverwriteFunctionReturn", "returnTwo", function ($a) {
+        return 3;
+    });
     sandbox(
         static function () {
-            Override::after("Test", "returnTwo", function ($a) {
-                return 3;
-            });
-        },
-        static function () {
-            class Test {
+            class TestOverwriteFunctionReturn {
                 public function returnTwo() {
                     return 2;
                 }
             }
-            echo (new Test())->returnTwo();
+            echo (new TestOverwriteFunctionReturn())->returnTwo();
         }
     )->toBe(3);
 });
 
 it('can overwrite final function return', function () {
+    Override::after("TestFinalFunctionReturn", "returnTwo", function ($a) {
+        return 3;
+    });
     sandbox(
         static function () {
-            Override::after("Test", "returnTwo", function ($a) {
-                return 3;
-            });
-        },
-        static function () {
-            class Test {
+            class TestFinalFunctionReturn {
                 final public function returnTwo() {
                     return 2;
                 }
             }
-            echo (new Test())->returnTwo();
+            echo (new TestFinalFunctionReturn())->returnTwo();
         }
     )->toBe(3);
 });
 
 it('can mutate function return', function () {
+    Override::after("TestMutableObject", "getMutatableObject", function (MutableObject $obj) {
+        $obj->a = 3;
+        return $obj;
+    });
     sandbox(
-        static function () {
-            Override::after("Test", "getMutatableObject", function (MutableObject $obj) {
-                $obj->a = 3;
-                return $obj;
-            });
-        },
         static function () {
             class MutableObject {
                 public $a = 1;
             }
-            class Test {
+            class TestMutableObject {
                 public $a;
                 public function __construct() {
                     $this->a = new MutableObject();
@@ -59,29 +57,27 @@ it('can mutate function return', function () {
                     return $this->a;
                 }
             }
-            echo (new Test())->getMutatableObject()->a;
+            echo (new TestMutableObject())->getMutatableObject()->a;
         }
     )->toBe(3);
 });
 
 it('can return a different anonymous function', function () {
+    Override::after("TestDifferentAnonymousFunction", "returnFunction", function (callable $a) {
+        return function () use ($a) {
+            return $a() + 1;
+        };
+    });
     sandbox(
         static function () {
-            Override::after("Test", "returnFunction", function (callable $a) {
-                return function () use ($a) {
-                    return $a() + 1;
-                };
-            });
-        },
-        static function () {
-            class Test {
+            class TestDifferentAnonymousFunction {
                 public function returnFunction() {
                     return function () {
                         return 2;
                     };
                 }
             }
-            echo (new Test())->returnFunction()();
+            echo (new TestDifferentAnonymousFunction())->returnFunction()();
         }
     )->toBe(3);
 });

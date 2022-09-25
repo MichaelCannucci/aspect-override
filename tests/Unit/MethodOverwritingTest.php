@@ -3,12 +3,10 @@
 use AspectOverride\Override;
 
 it("can overwrite method in declared namespace", function () {
+    Override::function('time', function () {
+        return 3;
+    });
     sandbox(
-        static function () {
-            Override::function('time', function () {
-                return 3;
-            });
-        },
         /** @lang PHP */
         "<?php
         namespace test;
@@ -19,12 +17,10 @@ it("can overwrite method in declared namespace", function () {
 });
 
 it("can overwrite method in scoped namespace", function () {
+    Override::function('time', function () {
+        return 3;
+    });
     sandbox(
-        static function () {
-            Override::function('time', function () {
-                return 3;
-            });
-        },
         /** @lang PHP */
         "<?php
         namespace test {
@@ -35,12 +31,10 @@ it("can overwrite method in scoped namespace", function () {
 });
 
 it("can overwrite method in multiple declared namespaces", function () {
+    Override::function('time', function () {
+        return 3;
+    });
     sandbox(
-        static function () {
-            Override::function('time', function () {
-                return 3;
-            });
-        },
         /** @lang PHP */
         "<?php
         namespace test;
@@ -52,12 +46,10 @@ it("can overwrite method in multiple declared namespaces", function () {
 });
 
 it("can overwrite method in multiple scoped namespaces", function () {
+    Override::function('time', function () {
+        return 3;
+    });
     sandbox(
-        static function () {
-            Override::function('time', function () {
-                return 3;
-            });
-        },
         /** @lang PHP */
         "<?php
         namespace test {
@@ -71,12 +63,10 @@ it("can overwrite method in multiple scoped namespaces", function () {
 });
 
 it("can overwrite method in nested namespace", function () {
+    Override::function('time', function () {
+        return 3;
+    });
     sandbox(
-        static function () {
-            Override::function('time', function () {
-                return 3;
-            });
-        },
         /** @lang PHP */
         "<?php
         namespace test\in\a\path;
@@ -86,13 +76,11 @@ it("can overwrite method in nested namespace", function () {
 });
 
 it("can overwrite reference variables of function", function () {
+    Override::function('array_shift', function (array &$array) {
+        $array = [1,2,3];
+        return 3;
+    });
     sandbox(
-        static function () {
-            Override::function('array_shift', function (array &$array) {
-                $array = [1,2,3];
-                return 3;
-            });
-        },
         /** @lang PHP */
         "<?php
         namespace test;
@@ -106,16 +94,14 @@ it("can overwrite reference variables of function", function () {
 });
 
 it("can overwrite method in chained calls", function() {
+    function test_function($a) { return $a + 1; }
+
+    Override::function('test_function', function ($a) {
+        return $a + 3;
+    });
     sandbox(
         static function () {
-            function test_function($a) { return $a + 1; }
-
-            Override::function('test_function', function ($a) {
-                return $a + 3;
-            });
-        },
-        static function () {
-            echo test_function(test_function(test_function(1))); // 4
+            echo test_function(test_function(test_function(1)));
         }
     )->toBe(10);
 });

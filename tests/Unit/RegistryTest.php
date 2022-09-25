@@ -1,43 +1,27 @@
 <?php
 
-namespace Tests\Unit;
-
 use AspectOverride\Core\ClassRegistry;
-use PHPUnit\Framework\TestCase;
 use TRegx\DataProvider\CrossDataProviders;
 
-class RegistryTest extends TestCase {
-    /**
-     * @dataProvider class_provider
-     */
-    public function test_can_save_callback(string $class, string $method) {
-        $registry = new ClassRegistry();
-        $registry->set($class, $method, function () {
-        });
-        $this->assertNotNull($registry->get($class, $method));
-    }
+$dataProvider = CrossDataProviders::cross([
+    ['Test'],
+    ['Test\A\B'],
+    ['Test\A\B\A']
+], [
+    ['test']
+]);
 
-    /**
-     * @dataProvider class_provider
-     */
-    public function test_can_remove_callback(string $class, string $method) {
-        $registry = new ClassRegistry();
-        $registry->set($class, $method, function () {
-        });
-        $registry->remove($class, $method);
-        $this->assertNull($registry->get($class, $method));
-    }
+it("registry properly saves callbacks", function ($class, $method) {
+    $registry = new ClassRegistry();
+    $registry->set($class, $method, function () {
+    });
+    $this->assertNotNull($registry->get($class, $method));
+})->with($dataProvider);
 
-    public function class_provider() {
-        return CrossDataProviders::cross(
-            [
-                ['Test'],
-                ['Test\A\B'],
-                ['Test\A\B\A']
-            ],
-            [
-                ['test']
-            ]
-        );
-    }
-}
+it("can properly remove callbacks", function ($class, $method) {
+    $registry = new ClassRegistry();
+    $registry->set($class, $method, function () {
+    });
+    $registry->remove($class, $method);
+    $this->assertNull($registry->get($class, $method));
+})->with($dataProvider);

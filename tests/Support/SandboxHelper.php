@@ -2,27 +2,8 @@
 
 namespace Tests\Support;
 
-/** Hacky code to get tests running */
 class SandboxHelper {
-    public static function runner(string $basePath, string $setupFilePath, string $testCasePath): string {
-        $basePath = realpath($basePath);
-        $setupFilePath = realpath($setupFilePath);
-        $testCasePath = realpath($testCasePath);
-        $cwd = getcwd();
-        return "<?php
-            require '$cwd/vendor/autoload.php';
-            
-            AspectOverride\Facades\Instance::initialize(
-                AspectOverride\Core\Configuration::create()
-                    ->setDirectories([ '$basePath' ])
-                    ->setDebugDump( '$basePath/output' )
-            );
-        
-            require '$setupFilePath';
-                        
-            require '$testCasePath';
-        ";
-    }
+
     public static function storeCode(string $path, string $code) {
         if (!file_exists($path)) {
             mkdir($path, 0777, true);
@@ -34,6 +15,7 @@ class SandboxHelper {
         }
         return $path;
     }
+
     public static function getCode(\Closure $closure, bool $stripNamespaces = false): string {
         try {
             $fn = new \ReflectionFunction($closure);
