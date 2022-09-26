@@ -32,12 +32,13 @@ composer require --dev mcannucci/aspect-override
 ## Bootstrapping
 To enable overwriting function and class method, AspectOverride needs to initialize some stream processors
 to perform the code transformations that enable the class method and function rewriting
+
 ```php
 <?php
 
 require __DIR__ . '/../vendor/autoload.php';
 
-AspectOverride\Facades\Instance::initialize(
+AspectOverride\Facades\AspectOverride::initialize(
     AspectOverride\Core\Configuration::create()
         ->setDirectories([
             __DIR__ . '/../app'
