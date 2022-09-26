@@ -3,49 +3,49 @@
 use AspectOverride\Override;
 
 it('can overwrite function arguments', function () {
-    Override::before("TestFunctionArgs", "echoArgs", function (&$a) {
+    Override::before("TestFunctionArgs", "returnArg", function (&$a) {
         $a = 3;
     });
-    sandbox(
+    evaluate(
         static function () {
             class TestFunctionArgs {
-                public function echoArgs($a) {
-                    echo $a;
+                public function returnArg($a) {
+                    return $a;
                 }
             }
-            (new TestFunctionArgs())->echoArgs(2);
+            return function() { return (new TestFunctionArgs())->returnArg(2); };
         }
     )->toBe(3);
 });
 
 it('can overwrite final function arguments', function () {
-    Override::before("TestFinalFunctionBefore", "echoArgs", function (&$a) {
+    Override::before("TestFinalFunctionBefore", "returnArg", function (&$a) {
         $a = 3;
     });
-    sandbox(
+    evaluate(
         static function () {
             class TestFinalFunctionBefore {
-                final public function echoArgs($a) {
-                    echo $a;
+                final public function returnArg($a) {
+                    return $a;
                 }
             }
-            (new TestFinalFunctionBefore())->echoArgs(2);
+            return function() { return (new TestFinalFunctionBefore())->returnArg(2); };
         }
     )->toBe(3);
 });
 
 it('can overwrite multiple function arguments', function () {
-    Override::before("TestOverwriteMultipleArgs", "echoSecondArg", function ($a, &$b, $c) {
+    Override::before("TestOverwriteMultipleArgs", "returnSecondArg", function ($a, &$b, $c) {
         $b = 3;
     });
-    sandbox(
+    evaluate(
         static function () {
             class TestOverwriteMultipleArgs {
-                public function echoSecondArg($a, $b, $c) {
-                    echo $b;
+                public function returnSecondArg($a, $b, $c) {
+                    return $b;
                 }
             }
-            (new TestOverwriteMultipleArgs())->echoSecondArg(2, 2, 2);
+            return function() { return (new TestOverwriteMultipleArgs())->returnSecondArg(2, 2, 2); };
         }
     )->toBe(3);
 });
@@ -54,16 +54,18 @@ it('respects pass by ref', function () {
     Override::before("Test", 'doThingToRef', function (&$a) {
         $a = 3; // Should be overwritten when the actual call happens
     });
-    sandbox(
+    evaluate(
         static function () {
             class TestRespectPassByRef {
                 public function doThingToRef(&$a) {
                     $a = 2;
                 }
             }
-            $a = 1;
-            (new TestRespectPassByRef())->doThingToRef($a);
-            echo $a;
+            return function() {
+                $a = 1;
+                (new TestRespectPassByRef())->doThingToRef($a);
+                return $a;
+            };
         }
     )->toBe(2);
 });

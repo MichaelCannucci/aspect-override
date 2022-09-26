@@ -2,7 +2,7 @@
 
 namespace Tests\Support;
 
-class SandboxHelper {
+class TestHelper {
 
     public static function storeCode(string $path, string $code) {
         if (!file_exists($path)) {
@@ -21,12 +21,6 @@ class SandboxHelper {
             $fn = new \ReflectionFunction($closure);
             $start = $fn->getStartLine();
             $end = $fn->getEndLine();
-            $file = file_get_contents($fn->getFileName());
-            // copying namespaces from the file is hacky, but it works for now :(
-            preg_match_all('/use.+/', $file, $matches);
-            $namespaces = array_map(function ($m) {
-                return $m[0];
-            }, $matches);
             $code = "";
             $lines = file($fn->getFileName());
             for($l = $start; $l < $end; $l++) {
@@ -38,10 +32,7 @@ class SandboxHelper {
                     $code .= $lines[$l];
                 }
             }
-            if ($stripNamespaces) {
-                $code = preg_replace('/\\\\.+\\\\/m', '', $code);
-            }
-            return "<?php" . PHP_EOL . implode("\n", $namespaces) . PHP_EOL . $code;
+            return "<?php" . PHP_EOL . $code;
         } catch (\ReflectionException $e) {
             throw new \RuntimeException($e->getMessage());
         }

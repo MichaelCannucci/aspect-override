@@ -10,14 +10,14 @@ it('can overwrite function return', function () {
     Override::after("TestOverwriteFunctionReturn", "returnTwo", function ($a) {
         return 3;
     });
-    sandbox(
+    evaluate(
         static function () {
             class TestOverwriteFunctionReturn {
                 public function returnTwo() {
                     return 2;
                 }
             }
-            echo (new TestOverwriteFunctionReturn())->returnTwo();
+            return function() { return (new TestOverwriteFunctionReturn())->returnTwo(); };
         }
     )->toBe(3);
 });
@@ -26,14 +26,14 @@ it('can overwrite final function return', function () {
     Override::after("TestFinalFunctionReturn", "returnTwo", function ($a) {
         return 3;
     });
-    sandbox(
+    evaluate(
         static function () {
             class TestFinalFunctionReturn {
                 final public function returnTwo() {
                     return 2;
                 }
             }
-            echo (new TestFinalFunctionReturn())->returnTwo();
+            return function() { return (new TestFinalFunctionReturn())->returnTwo(); };
         }
     )->toBe(3);
 });
@@ -43,7 +43,7 @@ it('can mutate function return', function () {
         $obj->a = 3;
         return $obj;
     });
-    sandbox(
+    evaluate(
         static function () {
             class MutableObject {
                 public $a = 1;
@@ -57,7 +57,7 @@ it('can mutate function return', function () {
                     return $this->a;
                 }
             }
-            echo (new TestMutableObject())->getMutatableObject()->a;
+            return function() { return (new TestMutableObject())->getMutatableObject()->a; };
         }
     )->toBe(3);
 });
@@ -68,7 +68,7 @@ it('can return a different anonymous function', function () {
             return $a() + 1;
         };
     });
-    sandbox(
+    evaluate(
         static function () {
             class TestDifferentAnonymousFunction {
                 public function returnFunction() {
@@ -77,7 +77,7 @@ it('can return a different anonymous function', function () {
                     };
                 }
             }
-            echo (new TestDifferentAnonymousFunction())->returnFunction()();
+            return function() { return (new TestDifferentAnonymousFunction())->returnFunction()(); };
         }
     )->toBe(3);
 });
