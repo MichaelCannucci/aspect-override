@@ -8,7 +8,7 @@ $tokenizer = new TokenStream(new TokenMachine([
         return $token->text . ' START';
     },
     TokenMachine::FUNCTION_END => function(PhpToken $token): string {
-        return 'END ' . $token->text;
+        return ' END ' . $token->text;
     }
 ]));
 
@@ -33,7 +33,7 @@ it("transforms code if function name is a reserved keyword", function() use ($to
     "))->toBe("
     class Test {
         public static function empty() { START
-        END }
+         END }
     }
     ");
 });

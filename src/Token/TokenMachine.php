@@ -58,7 +58,7 @@ class TokenMachine
                 $this->stack -= 1;
             }
             if ($this->stack === 0) {
-                $return = $this->checkStateAndReturnToken($this->state, self::FUNCTION_END, $token);
+                $return = $this->checkStateAndReturnTokenText($this->state, self::FUNCTION_END, $token);
                 $this->reset();
                 return $return;
             }
@@ -67,8 +67,6 @@ class TokenMachine
 
         if ($token->is(T_FUNCTION) && $this->inState(self::START, self::START)) {
             $nextState = self::FUNCTION_KEYWORD;
-        } elseif ($this->inState(self::FUNCTION_KEYWORD)) {
-            $nextState = self::FUNCTION_NAME;
         } elseif ($token->is("(") && $this->inState(self::FUNCTION_NAME)) {
             $nextState = self::PARAMETER_START;
         } elseif (($token->is([T_STRING, T_VARIABLE, ',', '&'])) && $this->inState(self::PARAMETER_START, self::PARAMETER_ARGUMENTS)) {
@@ -84,10 +82,13 @@ class TokenMachine
         } elseif ($token->is('{') && $this->inState(self::PARAMETER_END, self::FUNCTION_RETURN_TYPE)) {
             $nextState = self::FUNCTION_START;
             $this->stack = 1;
+        } elseif ($this->inState(self::FUNCTION_KEYWORD, self::FUNCTION_NAME)) {
+            // Needs to be towards the bottom, since this state is too general
+            $nextState = self::FUNCTION_NAME;
         } else {
             $nextState = self::START;
         }
-        return $this->checkStateAndReturnToken($this->state, $nextState, $token);
+        return $this->checkStateAndReturnTokenText($this->state, $nextState, $token);
     }
 
     public function reset(): void
@@ -98,7 +99,7 @@ class TokenMachine
         $this->capturedArguments = "";
     }
 
-    protected function checkStateAndReturnToken(int $previousState, int $nextState, \PhpToken $token): string
+    protected function checkStateAndReturnTokenText(int $previousState, int $nextState, \PhpToken $token): string
     {
         if ($previousState !== $nextState) {
             $this->state = $nextState;
