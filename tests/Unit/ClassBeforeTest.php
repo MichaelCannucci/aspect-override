@@ -62,7 +62,7 @@ it('respects pass by ref', function () {
                 }
             }
             return function() {
-                $a = 1;
+                $a = 2;
                 (new TestRespectPassByRef())->doThingToRef($a);
                 return $a;
             };
