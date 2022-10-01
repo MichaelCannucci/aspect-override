@@ -2,6 +2,8 @@
 
 namespace AspectOverride\Core;
 
+use AspectOverride\Utility\FilePaths;
+
 class Configuration {
     /** @var string[] */
     protected $directories;
@@ -29,7 +31,7 @@ class Configuration {
     protected function normalizeDirectories(array $directories): array {
         return array_filter(
             array_map(function (string $directory) {
-                return realpath($directory);
+                return FilePaths::almostRealPath($directory);
             }, $directories)
         );
     }

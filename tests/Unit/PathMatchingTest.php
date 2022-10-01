@@ -17,7 +17,7 @@ it("does not match invalid file paths", function($path) {
     $instance = new Instance(
         Configuration::create()->setDirectories(["/test"])
     );
-    expect($instance->shouldProcess($path))->toBeTrue();
+    expect($instance->shouldProcess($path))->toBeFalse();
 })->with([
    "/another_folder",
     "/start_with_another_path/but_has/test"
