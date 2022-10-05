@@ -5,6 +5,18 @@ namespace AspectOverride\Utility;
 class FilePaths
 {
     /**
+     * @param string[] $directories
+     * @return string[]
+     */
+    public static function normalizeDirectories(array $directories): array {
+        return array_filter(
+            array_map(function (string $directory) {
+                return self::almostRealPath($directory);
+            }, $directories)
+        );
+    }
+
+    /**
      *
      * @param string $path
      * @return string

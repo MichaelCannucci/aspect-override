@@ -26,22 +26,10 @@ class Configuration {
 
     /**
      * @param string[] $directories
-     * @return string[]
-     */
-    protected function normalizeDirectories(array $directories): array {
-        return array_filter(
-            array_map(function (string $directory) {
-                return FilePaths::almostRealPath($directory);
-            }, $directories)
-        );
-    }
-
-    /**
-     * @param string[] $directories
      * @return $this
      */
     public function setDirectories(array $directories): self {
-        $this->directories = $this->normalizeDirectories($directories);
+        $this->directories = FilePaths::normalizeDirectories($directories);
         return $this;
     }
 
@@ -57,7 +45,7 @@ class Configuration {
      * @return $this
      */
     public function setExcludedDirectories(array $directories): self {
-        $this->excludedDirectories = $this->normalizeDirectories($directories);
+        $this->excludedDirectories = FilePaths::normalizeDirectories($directories);
         return $this;
     }
 
