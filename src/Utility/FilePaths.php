@@ -22,15 +22,19 @@ class FilePaths
      * @return string
      */
     public static function almostRealPath(string $path): string {
-        $paths = explode(DIRECTORY_SEPARATOR, $path);
-        $length = count($paths);
-        for($i = 0; $i < $length; $i++) {
-            $item = $paths[$i];
-            if($item === '..' && isset($paths[$i++])) {
-                unset($paths[$i++]);
-                $i++;
+        $paths = explode(DIRECTORY_SEPARATOR, str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path));
+        $absolute = [];
+        foreach ($paths as $item) {
+            switch ($item) {
+                case ".":
+                    break;
+                case "..":
+                    array_pop($absolute);
+                    break;
+                default:
+                    $absolute[] = $item;
             }
         }
-        return implode(DIRECTORY_SEPARATOR, $paths);
+        return implode(DIRECTORY_SEPARATOR, $absolute);
     }
 }
