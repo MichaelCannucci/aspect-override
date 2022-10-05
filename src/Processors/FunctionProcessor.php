@@ -35,7 +35,7 @@ class FunctionProcessor implements CodeProcessorInterface {
         'echo'         => true, // Language Keyword
     ];
 
-    public function onNewFile(): void {
+    public function onNew(): void {
         $this->namespaces = [];
     }
 

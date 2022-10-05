@@ -59,10 +59,10 @@ class PhpUserFilter extends \php_user_filter {
         }
     }
 
-    public function onNewFile(): void
+    public function onNew(): void
     {
         foreach ($this->getProcessors() as $processor) {
-            $processor->onNewFile();
+            $processor->onNew();
         }
     }
 }

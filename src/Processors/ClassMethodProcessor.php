@@ -48,7 +48,7 @@ class ClassMethodProcessor implements CodeProcessorInterface {
         return $this->tokenizer->transform($data);
     }
 
-    public function onNewFile(): void {
+    public function onNew(): void {
         $this->tokenizer->reset();
     }
 }
