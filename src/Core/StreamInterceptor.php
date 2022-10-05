@@ -84,7 +84,7 @@ class StreamInterceptor {
             }
 
             if (false !== $this->resource && $options & self::STREAM_OPEN_FOR_INCLUDE && AspectOverride::shouldProcess($path)) {
-                self::$streamProcessor->onNewFile();
+                self::$streamProcessor->onNew();
                 stream_filter_append($this->resource, self::$streamProcessor::NAME, \STREAM_FILTER_READ);
             }
 
