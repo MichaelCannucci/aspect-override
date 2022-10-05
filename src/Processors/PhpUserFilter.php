@@ -41,10 +41,21 @@ class PhpUserFilter extends \php_user_filter {
                 $bucket->data = $processor->transform($bucket->data);
             }
             $consumed += $bucket->datalen;
-            AspectOverride::dump($bucket->data);
+            $this->dumpIfDebug($bucket->data);
             stream_bucket_append($out, $bucket);
         }
         return \PSFS_PASS_ON;
+    }
+
+    /**
+     * @param mixed $data
+     * @return void
+     */
+    public function dumpIfDebug($data): void {
+        if($path = AspectOverride::getConfiguration()->getDebugDump()) {
+            $name = md5($data);
+            file_put_contents("$path/$name.php", $data);
+        }
     }
 
     /**
