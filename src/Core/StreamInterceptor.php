@@ -2,11 +2,8 @@
 
 namespace AspectOverride\Core;
 
-use AspectOverride\Processors\AbstractProcessor;
-use AspectOverride\Processors\ClassMethodProcessor;
-use AspectOverride\Processors\FunctionProcessor;
-use Exception;
-use RuntimeException;
+use AspectOverride\Facades\AspectOverride;
+use AspectOverride\Processors\PhpUserFilter;
 
 /**
  * Implementation adapted from:
@@ -32,35 +29,13 @@ class StreamInterceptor {
      */
     public $context;
 
-    /**
-     * @var AbstractProcessor[]
-     * */
-    protected static $streamProcessors;
-
-    /**
-     * @var Configuration
-     * */
-    protected static $configuration;
-
-    /**
-     * @param AbstractProcessor[] $streamProcessors
-     */
-    public function __construct(Configuration $configuration = null, array $streamProcessors = null) {
-        if ($configuration) {
-            self::$configuration = $configuration;
+    protected function getStreamProcessor(): PhpUserFilter {
+        static $streamFilter;
+        if (empty($streamFilter)) {
+            $streamFilter = new PhpUserFilter();
+            $streamFilter->register();
         }
-        if ($streamProcessors) {
-            self::$streamProcessors = $streamProcessors;
-        }
-        if (empty($streamProcessors)) {
-            self::$streamProcessors = $streamProcessors ?: [
-                new ClassMethodProcessor(),
-                new FunctionProcessor()
-            ];
-        }
-        foreach (self::$streamProcessors as $streamProcessors) {
-            $streamProcessors->register();
-        }
+        return $streamFilter;
     }
 
     public function intercept(): void {
@@ -75,29 +50,6 @@ class StreamInterceptor {
     public function restore(): void {
         stream_wrapper_unregister(self::PROTOCOL);
         stream_wrapper_restore(self::PROTOCOL);
-    }
-
-    /**
-     * Determines that the provided uri leads to a PHP file.
-     */
-    protected function isPhpFile(string $uri): bool {
-        return 'php' === pathinfo($uri, PATHINFO_EXTENSION);
-    }
-
-    protected function shouldProcess(string $uri): bool {
-        $excludedDirectories = self::$configuration->getExcludedDirectories();
-        foreach ($excludedDirectories as $excluded) {
-            if ($this->isPhpFile($uri) && false !== strpos($uri, $excluded)) {
-                return false;
-            }
-        }
-        $allowedDirectories = self::$configuration->getDirectories();
-        foreach ($allowedDirectories as $directory) {
-            if ($this->isPhpFile($uri) && false !== strpos($uri, $directory)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -128,10 +80,9 @@ class StreamInterceptor {
                 $this->resource = fopen($path, $mode, (bool)($options & STREAM_USE_PATH));
             }
 
-            if (false !== $this->resource && $options & self::STREAM_OPEN_FOR_INCLUDE && $this->shouldProcess($path)) {
-                foreach (self::$streamProcessors as $streamProcessors) {
-                    stream_filter_append($this->resource, $streamProcessors::NAME, \STREAM_FILTER_READ);
-                }
+            if (false !== $this->resource && $options & self::STREAM_OPEN_FOR_INCLUDE && AspectOverride::shouldProcess($path)) {
+                $this->getStreamProcessor()->onNew();
+                stream_filter_append($this->resource, $this->getStreamProcessor()::NAME, \STREAM_FILTER_READ);
             }
 
             $this->intercept();
@@ -141,7 +92,7 @@ class StreamInterceptor {
             throw new \RuntimeException(
                 "Unexpected error occurred when transforming file, " .
                 "try excluding '$path' and rerunning tests " .
-                "\n\noriginal error: " . $throwable->getMessage()
+                "original error: " . $throwable->getMessage()
             );
         }
     }
@@ -241,7 +192,7 @@ class StreamInterceptor {
             return false;
         }
 
-        if (!$this->shouldProcess(stream_get_meta_data($this->resource)['uri'])) {
+        if (!AspectOverride::shouldProcess(stream_get_meta_data($this->resource)['uri'])) {
             return fstat($this->resource);
         }
 

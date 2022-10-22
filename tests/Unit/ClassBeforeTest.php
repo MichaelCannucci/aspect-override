@@ -3,76 +3,69 @@
 use AspectOverride\Override;
 
 it('can overwrite function arguments', function () {
-    sandbox(
+    Override::before("TestFunctionArgs", "returnArg", function (&$a) {
+        $a = 3;
+    });
+    evaluate(
         static function () {
-            Override::beforeMethod("Test", "echoArgs", function ($a) {
-                return [3];
-            });
-        },
-        static function () {
-            class Test {
-                public function echoArgs($a) {
-                    echo $a;
+            class TestFunctionArgs {
+                public function returnArg($a) {
+                    return $a;
                 }
             }
-            (new Test())->echoArgs(2);
+            return function() { return (new TestFunctionArgs())->returnArg(2); };
         }
     )->toBe(3);
 });
 
 it('can overwrite final function arguments', function () {
-    sandbox(
+    Override::before("TestFinalFunctionBefore", "returnArg", function (&$a) {
+        $a = 3;
+    });
+    evaluate(
         static function () {
-            Override::beforeMethod("Test", "echoArgs", function ($a) {
-                return [3];
-            });
-        },
-        static function () {
-            class Test {
-                final public function echoArgs($a) {
-                    echo $a;
+            class TestFinalFunctionBefore {
+                final public function returnArg($a) {
+                    return $a;
                 }
             }
-            (new Test())->echoArgs(2);
+            return function() { return (new TestFinalFunctionBefore())->returnArg(2); };
         }
     )->toBe(3);
 });
 
-it('can overwrite specific function arguments', function () {
-    sandbox(
+it('can overwrite multiple function arguments', function () {
+    Override::before("TestOverwriteMultipleArgs", "returnSecondArg", function ($a, &$b, $c) {
+        $b = 3;
+    });
+    evaluate(
         static function () {
-            Override::beforeMethod("Test", "echoSecondArg", function ($a, $b, $c) {
-                return ['b' => 3];
-            });
-        },
-        static function () {
-            class Test {
-                public function echoSecondArg($a, $b, $c) {
-                    echo $b;
+            class TestOverwriteMultipleArgs {
+                public function returnSecondArg($a, $b, $c) {
+                    return $b;
                 }
             }
-            (new Test())->echoSecondArg(2, 2, 2);
+            return function() { return (new TestOverwriteMultipleArgs())->returnSecondArg(2, 2, 2); };
         }
     )->toBe(3);
 });
 
 it('respects pass by ref', function () {
-    sandbox(
+    Override::before("Test", 'doThingToRef', function (&$a) {
+        $a = 3; // Should be overwritten when the actual call happens
+    });
+    evaluate(
         static function () {
-            Override::beforeMethod("Test", 'doThingToRef', function ($a) {
-                // Since 'extract' is what sets the variables, we don't have to modify the reference ourselves
-                return [3];
-            });
-        },
-        static function () {
-            class Test {
+            class TestRespectPassByRef {
                 public function doThingToRef(&$a) {
                     $a = 2;
                 }
             }
-            $a = 1;
-            (new Test())->doThingToRef($a);
-            echo $a;
+            return function() {
+                $a = 2;
+                (new TestRespectPassByRef())->doThingToRef($a);
+                return $a;
+            };
         }
     )->toBe(2);
 });

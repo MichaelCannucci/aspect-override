@@ -2,10 +2,8 @@
 
 namespace AspectOverride\Processors;
 
-class FunctionProcessor extends AbstractProcessor {
-    public const NAME = 'aspect_mock_function_override';
-
-    public const PATTERN = '/(?<!new|function)(\s|\()(((?!function|if|else|elseif)\w+)(\(.*?\)))/m';
+class FunctionProcessor implements CodeProcessorInterface {
+    public const PATTERN = '/(function |new )?(\w+)(\()/i';
 
     public const NAMESPACE_PATTERN = '/namespace (.+)(;| {)/m';
 
@@ -14,10 +12,29 @@ class FunctionProcessor extends AbstractProcessor {
 
     /** Function that shouldn't be patched because it breaks things or doesn't make sense */
     private const DENY_LIST = [
-        'extract' => true // extract does nothing because it runs in another scope, so no variables change
+        'extract'      => true, // extract does nothing because it runs in another scope, so no variables change
+        'if'           => true, // Language Keyword
+        'elseif'       => true, // Language Keyword
+        'else'         => true, // Language Keyword
+        'function'     => true, // Language Keyword
+        'while'        => true, // Language Keyword
+        'unset'        => true, // Language Keyword
+        'isset'        => true, // Language Keyword
+        'empty'        => true, // Language Keyword
+        'die'          => true, // Language Keyword
+        'use'          => true, // Language Keyword
+        'match'        => true, // Language Keyword
+        'declare'      => true, // Language Keyword
+        'list'         => true, // Language Keyword
+        'array'        => true, // Language Keyword
+        'require'      => true, // Language Keyword
+        'require_once' => true, // Language Keyword
+        'include'      => true, // Language Keyword
+        'include_once' => true, // Language Keyword
+        'echo'         => true, // Language Keyword
     ];
 
-    public function onNewFile(): void {
+    public function onNew(): void {
         $this->namespaces = [];
     }
 
@@ -27,25 +44,30 @@ class FunctionProcessor extends AbstractProcessor {
             $this->namespaces = $found[1];
         }
         return (string)preg_replace_callback(self::PATTERN, function ($m) {
-            $function = $m[3];
-            if (!array_key_exists($function, self::DENY_LIST)) {
-                $function = $this->loadPatchedFunction($m[3]);
+            [$original, $before, $function, $after] = $m;
+            if (
+                !array_key_exists($function, self::DENY_LIST)
+                && !in_array(trim(mb_convert_case($before, MB_CASE_LOWER)), ['function', 'new'])
+                && $this->functionExists($function)
+            ) {
+                $function = $this->loadPatchedFunction($function);
+                return $before . $function . $after;
             }
-            return $m[1] . $function . $m[4];
+            return $original;
         }, $data);
     }
 
     public function loadPatchedFunction(string $name): string {
         $uniqueName = $name . '_' . md5($name);
-        $namespaces = empty($this->namespaces) ? [''] : $this->namespaces;
-        foreach ($namespaces as $namespace) {
+        foreach (($this->namespaces ?: ['']) as $namespace) {
             [$parameters, $passed] = $this->getOriginalParameters($namespace, $name);
-            $code = /** @lang PHP */ "
+            $code = /** @lang PHP */
+                "
               namespace $namespace {
                if(!function_exists('$namespace\\$uniqueName')) {
                  function {$uniqueName}($parameters) {
-                   \$__fn__ =  \AspectOverride\Facades\Instance::getForFunction('$namespace\\$name') ?: 
-                      \AspectOverride\Facades\Instance::getForFunction('$name') ?: null; 
+                   \$__fn__ =  \AspectOverride\Facades\AspectOverride::getForFunction('$namespace\\$name') ?: 
+                      \AspectOverride\Facades\AspectOverride::getForFunction('$name') ?: null; 
                    if(\$__fn__) {
                      return \$__fn__($passed);
                    }
@@ -77,8 +99,20 @@ class FunctionProcessor extends AbstractProcessor {
             }
             return [implode(',', $functionParameters), implode(',', $passedParameters)];
         } catch (\ReflectionException $e) {
-            throw new \RuntimeException($e->getMessage());
+            throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
         }
+    }
+
+    protected function functionExists(string $function): bool {
+        if (function_exists($function)) {
+            return true;
+        }
+        foreach ($this->namespaces as $namespace) {
+            if (function_exists($namespace . '\\' . $function)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

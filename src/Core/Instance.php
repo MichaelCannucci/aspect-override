@@ -3,59 +3,63 @@
 namespace AspectOverride\Core;
 
 class Instance {
-    /** @var Configuration */
+    /**
+     * @var Configuration
+     */
     protected $config;
-    /** @var StreamInterceptor */
+    /**
+     * @var StreamInterceptor
+     */
     protected $interceptor;
-    /** @var ClassRegistry */
-    protected $classOverwriteRegistry;
-    /** @var ClassRegistry */
-    protected $classBeforeRegistry;
-    /** @var ClassRegistry */
-    protected $classAfterRegistry;
-    /** @var FunctionRegistry */
+    /**
+     * @var ClassRegistry
+     */
+    protected $classRegistry;
+    /**
+     * @var FunctionRegistry
+     */
     protected $functionRegistry;
+    /**
+     * @var FileChecker
+     */
+    protected $fileChecker;
+    /**
+     * @var Execution
+     */
+    protected $execution;
 
     public function __construct(
-        Configuration     $configuration = null,
+        Configuration     $configuration,
         StreamInterceptor $interceptor = null,
         ClassRegistry     $classOverwriteRegistry = null,
-        ClassRegistry     $classBeforeRegistry = null,
-        ClassRegistry     $classAfterRegistry = null,
-        FunctionRegistry  $functionRegistry = null
+        FunctionRegistry  $functionRegistry = null,
+        FileChecker       $fileChecker = null,
+        Execution         $execution = null
     ) {
-        $this->interceptor = $interceptor ?? new StreamInterceptor($configuration);
-        $this->config = $configuration ?? new Configuration();
-        $this->classBeforeRegistry = $classBeforeRegistry ?? new ClassRegistry();
-        $this->classAfterRegistry = $classAfterRegistry ?? new ClassRegistry();
-        $this->classOverwriteRegistry = $classOverwriteRegistry ?? new ClassRegistry();
+        $this->config = $configuration;
+        $this->interceptor = $interceptor ?? new StreamInterceptor();
+        $this->classRegistry = $classOverwriteRegistry ?? new ClassRegistry();
         $this->functionRegistry = $functionRegistry ?? new FunctionRegistry();
-        $this->reset();
-        $this->start();
+        $this->fileChecker = $fileChecker ?? new FileChecker($this->config);
+        $this->execution = $execution ?? new Execution();
+        $this->initialize();
     }
 
-    public function reset(): void {
+    private function initialize(): void {
         $this->interceptor->restore();
+        $this->interceptor->intercept();
     }
 
-    public function start(): void {
-        $this->interceptor->intercept();
+    public function close(): void {
+        $this->interceptor->restore();
     }
 
     public function getConfiguration(): Configuration {
         return $this->config;
     }
 
-    public function getClassOverwriteRegistry(): ClassRegistry {
-        return $this->classOverwriteRegistry;
-    }
-
-    public function getClassBeforeRegistry(): ClassRegistry {
-        return $this->classBeforeRegistry;
-    }
-
-    public function getClassAfterRegistry(): ClassRegistry {
-        return $this->classAfterRegistry;
+    public function getClassRegistry(): ClassRegistry {
+        return $this->classRegistry;
     }
 
     public function getFunctionRegistry(): FunctionRegistry {
@@ -63,10 +67,28 @@ class Instance {
     }
 
     public function resetRegistry(): self {
-        $this->classOverwriteRegistry->reset();
-        $this->classBeforeRegistry->reset();
-        $this->classAfterRegistry->reset();
+        $this->classRegistry->reset();
         $this->functionRegistry->reset();
         return $this;
+    }
+
+    /**
+     * @param class-string$class
+     * @param mixed[] $args
+     * @return mixed[]
+     */
+    public function wrapAround(string $class, string $method, array $args, callable $execute): array {
+        $around = $this->classRegistry->get($class, $method) ?? function (callable $execute, ...$args) {
+            return $execute(...$args);
+        };
+        return $this->execution->wrap($around, $args, $execute);
+    }
+
+    public function getForFunction(string $fn): ?callable {
+        return $this->functionRegistry->get($fn);
+    }
+
+    public function shouldProcess(string $path): bool {
+        return $this->fileChecker->shouldProcess($path);
     }
 }
