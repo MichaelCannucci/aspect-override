@@ -20,11 +20,11 @@ class Instance {
      */
     protected $functionRegistry;
     /**
-     * @var FileChecker|null
+     * @var FileChecker
      */
     protected $fileChecker;
     /**
-     * @var Execution|null
+     * @var Execution
      */
     protected $execution;
 
@@ -72,6 +72,11 @@ class Instance {
         return $this;
     }
 
+    /**
+     * @param class-string$class
+     * @param mixed[] $args
+     * @return mixed[]
+     */
     public function wrapAround(string $class, string $method, array $args, callable $execute): array {
         $around = $this->classRegistry->get($class, $method) ?? function (callable $execute, ...$args) {
             return $execute(...$args);

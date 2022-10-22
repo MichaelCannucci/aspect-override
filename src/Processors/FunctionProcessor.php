@@ -3,7 +3,6 @@
 namespace AspectOverride\Processors;
 
 class FunctionProcessor implements CodeProcessorInterface {
-
     public const PATTERN = '/(function |new )?(\w+)(\()/i';
 
     public const NAMESPACE_PATTERN = '/namespace (.+)(;| {)/m';

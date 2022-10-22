@@ -4,8 +4,7 @@ namespace AspectOverride\Core;
 
 use AspectOverride\Utility\FilePaths;
 
-class FileChecker
-{
+class FileChecker {
     /**
      * @var Configuration
      */
@@ -19,12 +18,15 @@ class FileChecker
 
     public function shouldProcess(string $path): bool {
         $path = FilePaths::almostRealPath($path);
-        if($this->isInDirectories($this->configuration->getExcludedDirectories(), $path)) {
+        if ($this->isInDirectories($this->configuration->getExcludedDirectories(), $path)) {
             return false;
         }
         return $this->isInDirectories($this->configuration->getDirectories(), $path);
     }
 
+    /**
+     * @param string[] $paths
+     */
     protected function isInDirectories(array $paths, string $path): bool {
         foreach ($paths as $directory) {
             if ($this->isPhpFile($path) && false !== str_starts_with($path, $directory)) {

@@ -6,18 +6,16 @@ use AspectOverride\Token\TokenStream;
 use AspectOverride\Token\TokenMachine;
 
 class ClassMethodProcessor implements CodeProcessorInterface {
-
     /**
      * @var TokenStream
      */
     protected $tokenizer;
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->tokenizer = new TokenStream(new TokenMachine([
             TokenMachine::FUNCTION_START => function (\PhpToken $token, TokenMachine $machine) {
-                if($machine->capturedArguments) {
-                    $argNames = explode(',', str_replace(['$', '&'], '',$machine->capturedArguments));
+                if ($machine->capturedArguments) {
+                    $argNames = explode(',', str_replace(['$', '&'], '', $machine->capturedArguments));
                     $quotedNames = "'" . implode("','", $argNames) . "'";
                     $gatherArgs = "compact($quotedNames)";
                 } else {

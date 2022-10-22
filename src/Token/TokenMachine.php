@@ -2,8 +2,7 @@
 
 namespace AspectOverride\Token;
 
-class TokenMachine
-{
+class TokenMachine {
     public const START = 1;
     public const FUNCTION_KEYWORD = 2;
     public const FUNCTION_NAME = 3;
@@ -39,13 +38,11 @@ class TokenMachine
     /**
      * @param callable[] $events
      */
-    public function __construct(array $events = [])
-    {
+    public function __construct(array $events = []) {
         $this->events = $events;
     }
 
-    public function process(\PhpToken $token): string
-    {
+    public function process(\PhpToken $token): string {
         if ($token->isIgnorable()) {
             return $token->text;
         }
@@ -91,16 +88,14 @@ class TokenMachine
         return $this->checkStateAndReturnTokenText($this->state, $nextState, $token);
     }
 
-    public function reset(): void
-    {
+    public function reset(): void {
         $this->state = self::START;
         $this->stack = 0;
         $this->voidReturn = false;
         $this->capturedArguments = "";
     }
 
-    protected function checkStateAndReturnTokenText(int $previousState, int $nextState, \PhpToken $token): string
-    {
+    protected function checkStateAndReturnTokenText(int $previousState, int $nextState, \PhpToken $token): string {
         if ($previousState !== $nextState) {
             $this->state = $nextState;
             if (array_key_exists($nextState, $this->events)) {
@@ -110,8 +105,7 @@ class TokenMachine
         return $token->text;
     }
 
-    private function inState(int ...$states): bool
-    {
+    private function inState(int ...$states): bool {
         return in_array($this->state, $states);
     }
 }

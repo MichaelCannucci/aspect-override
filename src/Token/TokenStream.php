@@ -33,15 +33,18 @@ class TokenStream {
         }
         // Keep the last token in the buffer if it's not a valid end
         // and looks like it's in the middle (we'll append it in the next buffer)
-        if(!in_array(trim(end($buffer)), ['}', ';', ''])) {
-            $this->last = array_pop($buffer);
-        } else {
-            $this->last = '';
+        $last = end($buffer);
+        if (is_string($last)) {
+            if (!in_array(trim($last), ['}', ';', ''])) {
+                $this->last = array_pop($buffer) ?? '';
+            } else {
+                $this->last = '';
+            }
         }
         return implode('', $buffer);
     }
 
-    public function reset() {
+    public function reset(): void {
         $this->last = '';
         $this->machine->reset();
     }

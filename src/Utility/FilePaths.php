@@ -2,8 +2,7 @@
 
 namespace AspectOverride\Utility;
 
-class FilePaths
-{
+class FilePaths {
     /**
      * @param string[] $directories
      * @return string[]

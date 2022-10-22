@@ -4,8 +4,7 @@ namespace AspectOverride\Token;
 
 use PhpToken;
 
-class Tokenizer
-{
+class Tokenizer {
     /**
      * @return PhpToken[]
      */

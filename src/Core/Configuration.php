@@ -60,7 +60,7 @@ class Configuration {
      * @param false|string $debug
      */
     public function setDebugDump($debug): self {
-        if($debug && !file_exists($debug)) {
+        if ($debug && !file_exists($debug)) {
             mkdir($debug, 0777, true);
         }
         $this->debugDump = $debug;

@@ -16,8 +16,8 @@ class PhpUserFilter extends \php_user_filter {
      */
     public function getProcessors(): array {
         static $processors; // Can't use constructor since the object isn't constructed normally
-        if(!$processors) {
-            $processors = [new FunctionProcessor, new ClassMethodProcessor];
+        if (!$processors) {
+            $processors = [new FunctionProcessor(), new ClassMethodProcessor()];
         }
         return $processors;
     }
@@ -36,7 +36,6 @@ class PhpUserFilter extends \php_user_filter {
      */
     public function filter($in, $out, &$consumed, $closing): int {
         while ($bucket = stream_bucket_make_writeable($in)) {
-            /** @var \stdClass $bucket */
             foreach ($this->getProcessors() as $processor) {
                 $bucket->data = $processor->transform($bucket->data);
             }
@@ -52,7 +51,7 @@ class PhpUserFilter extends \php_user_filter {
      * @return void
      */
     public function dumpIfDebug($data): void {
-        if($path = AspectOverride::getConfiguration()->getDebugDump()) {
+        if ($path = AspectOverride::getConfiguration()->getDebugDump()) {
             $name = md5($data);
             file_put_contents("$path/$name.php", $data);
         }
@@ -70,8 +69,7 @@ class PhpUserFilter extends \php_user_filter {
         }
     }
 
-    public function onNew(): void
-    {
+    public function onNew(): void {
         foreach ($this->getProcessors() as $processor) {
             $processor->onNew();
         }

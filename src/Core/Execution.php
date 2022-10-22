@@ -2,14 +2,10 @@
 
 namespace AspectOverride\Core;
 
-class Execution
-{
+class Execution {
     /**
-     * @param class-string $class
-     * @param string $method
      * @param mixed[] $args
-     * @param callable $execute
-     * @return mixed
+     * @return mixed[]
      */
     public function wrap(callable $callable, array $args, callable $execute): array {
         // temporary holder for arguments while we mutate them
