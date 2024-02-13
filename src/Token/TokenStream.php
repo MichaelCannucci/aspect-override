@@ -2,9 +2,11 @@
 
 namespace AspectOverride\Token;
 
+use AspectOverride\Token\Machine\TokenMachineInterface;
+
 class TokenStream {
     /**
-     * @var TokenMachine
+     * @var TokenMachineInterface
      */
     protected $machine;
     /**
@@ -16,11 +18,16 @@ class TokenStream {
      */
     protected $last = '';
 
+    /**
+     * @var \PhpToken|null
+     */
+    protected $lastToken = null;
+
     public function __construct(
-        TokenMachine $machine = null,
+        TokenMachineInterface $machine,
         Tokenizer $tokenizer = null
     ) {
-        $this->machine = $machine ?? new TokenMachine();
+        $this->machine = $machine;
         $this->tokenizer = $tokenizer ?? new Tokenizer();
     }
 
@@ -29,7 +36,8 @@ class TokenStream {
         $buffer = [];
         $code = $this->last . $code;
         foreach ($this->tokenizer->tokens($code) as $index => $token) {
-            $buffer[$index] = $this->machine->process($token);
+            $buffer[$index] = $this->machine->process($token, $this->lastToken);
+            $this->lastToken = $token;
         }
         // Keep the last token in the buffer if it's not a valid end
         // and looks like it's in the middle (we'll append it in the next buffer)
@@ -46,6 +54,7 @@ class TokenStream {
 
     public function reset(): void {
         $this->last = '';
+        $this->lastToken = null;
         $this->machine->reset();
     }
 }

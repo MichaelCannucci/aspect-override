@@ -3,7 +3,7 @@
 namespace AspectOverride\Processors;
 
 use AspectOverride\Token\TokenStream;
-use AspectOverride\Token\TokenMachine;
+use AspectOverride\Token\Machine\ClassTokenMachine;
 
 class ClassMethodProcessor implements CodeProcessorInterface {
     /**
@@ -12,24 +12,28 @@ class ClassMethodProcessor implements CodeProcessorInterface {
     protected $tokenizer;
 
     public function __construct() {
-        $this->tokenizer = new TokenStream(new TokenMachine([
-            TokenMachine::FUNCTION_START => function (\PhpToken $token, TokenMachine $machine) {
-                if ($machine->capturedArguments) {
-                    $argNames = explode(',', str_replace(['$', '&'], '', $machine->capturedArguments));
+        $this->tokenizer = new TokenStream(new ClassTokenMachine([
+            ClassTokenMachine::FUNCTION_START => function (\PhpToken $token, ClassTokenMachine $machine) {
+                if ($machine->rawArguments()) {
+                    $argNames = explode(',', str_replace(['$', '&'], '', $machine->rawArguments()));
                     $quotedNames = "'" . implode("','", $argNames) . "'";
                     $gatherArgs = "compact($quotedNames)";
                 } else {
                     $gatherArgs = "[]";
                 }
+                $rawArgs = $machine->rawArguments();
                 return $token->text .
                     /** @lang PHP */
                     "list(\$args, \$result) = \AspectOverride\Facades\AspectOverride::wrapAround(" .
-                    "__CLASS__, __FUNCTION__, $gatherArgs, function($machine->capturedArguments){";
+                    "__CLASS__, __FUNCTION__, $gatherArgs, function($rawArgs".
+                    "){";
             },
-            TokenMachine::FUNCTION_END => function (\PhpToken $token, TokenMachine $machine) {
-                $return = $machine->voidReturn ? '' : /** @lang PHP */ 'return $result;';
-                $overwriteArguments = str_contains($machine->capturedArguments, '&') ?
-                    /** @lang PHP */ 'if($args) { extract($args, EXTR_OVERWRITE); }' : '';
+            ClassTokenMachine::FUNCTION_END => function (\PhpToken $token, ClassTokenMachine $machine) {
+                $return = $machine->voidReturn() ? '' : /** @lang PHP */ 'return $result;';
+                $overwriteArguments = str_contains($machine->rawArguments(), '&')
+                    ? /** @lang PHP */ 'if($args) { extract($args, EXTR_OVERWRITE); }'
+                    : '';
+
                 return $token->text . /** @lang PHP */ "); $overwriteArguments $return }";
             }
         ]));
