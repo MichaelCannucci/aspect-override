@@ -1,13 +1,13 @@
 <?php
 
+use AspectOverride\Token\Machine\ClassTokenMachine;
 use AspectOverride\Token\TokenStream;
-use AspectOverride\Token\TokenMachine;
 
-$tokenizer = new TokenStream(new TokenMachine([
-    TokenMachine::FUNCTION_START => function(PhpToken $token): string {
+$tokenizer = new TokenStream(new ClassTokenMachine([
+    ClassTokenMachine::FUNCTION_START => function(PhpToken $token): string {
         return $token->text . ' START';
     },
-    TokenMachine::FUNCTION_END => function(PhpToken $token): string {
+    ClassTokenMachine::FUNCTION_END => function(PhpToken $token): string {
         return ' END ' . $token->text;
     }
 ]));
