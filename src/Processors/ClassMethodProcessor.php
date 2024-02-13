@@ -25,8 +25,7 @@ class ClassMethodProcessor implements CodeProcessorInterface {
                 return $token->text .
                     /** @lang PHP */
                     "list(\$args, \$result) = \AspectOverride\Facades\AspectOverride::wrapAround(" .
-                    "__CLASS__, __FUNCTION__, $gatherArgs, function($rawArgs".
-                    "){";
+                    "__CLASS__, __FUNCTION__, $gatherArgs, function($rawArgs){";
             },
             ClassTokenMachine::FUNCTION_END => function (\PhpToken $token, ClassTokenMachine $machine) {
                 $return = $machine->voidReturn() ? '' : /** @lang PHP */ 'return $result;';
