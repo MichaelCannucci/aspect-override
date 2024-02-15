@@ -4,6 +4,9 @@ namespace AspectOverride\Token\Machine;
 
 use AspectOverride\Token\Machine\Traits\ContainsTokenStateMachine;
 
+/**
+ * @wip
+ */
 class FunctionTokenMachine implements TokenMachineInterface {
     public const START = 1;
     public const QUALIFIED_NAMESPACE_START = 2;
@@ -63,20 +66,20 @@ class FunctionTokenMachine implements TokenMachineInterface {
     /**
      * @param callable[] $events
      */
-    protected array $events;
+    protected $events;
 
     public function __construct(array $events = []) {
         $this->events = $events;
     }
 
-    public function process(\PhpToken $token, ?\PhpToken $before = null): string {
+    public function process(\PhpToken $token): string {
         if ($token->isIgnorable()) {
             return $token->text;
         }
 
         switch ($this->lastState) {
             case self::START:
-                if ($this->isFunction($token, $before)) {
+                if ($this->isFunction($token)) {
                     $this->name = $token->text;
                     $this->nextState = self::FUNCTION_START;
                 }
@@ -126,7 +129,7 @@ class FunctionTokenMachine implements TokenMachineInterface {
                     $this->nextState = self::START;
                     $this->functions[] = $this->name;
                     $this->name = '';
-                } elseif ($this->isFunction($token, $before)) {
+                } elseif ($this->isFunction($token)) {
                     $this->nextState = self::FUNCTION_START;
                 } else {
                     $this->stateBroken();
@@ -141,9 +144,9 @@ class FunctionTokenMachine implements TokenMachineInterface {
         return $this->tickState($this->events, $token);
     }
 
-    protected function isFunction(\PhpToken $token, \PhpToken $before): bool {
+    protected function isFunction(\PhpToken $token): bool {
         return $token->is(T_STRING) &&
-        !$before->is([T_FUNCTION, T_NEW]) &&
+        !$this->lastToken->is([T_FUNCTION, T_NEW]) &&
         $this->allowedFunction($token->text) &&
         $this->functionExists($token->text);
     }

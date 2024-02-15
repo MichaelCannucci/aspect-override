@@ -9,26 +9,29 @@ trait ContainsTokenStateMachine {
      */
     protected $lastState = 0;
 
+    /**
+     * @var int
+     */
     protected $nextState = 0;
 
-    public function inStates(int ...$states): bool {
-        return in_array($this->lastState, $states);
-    }
+    /**
+     * @var null|\PhpToken
+     */
+    protected $lastToken = null;
 
     public function stateBroken(): void {
         $this->nextState = 0;
     }
 
     public function tickState(array $events, \PhpToken $token): string {
+        $text = $token->text;
         if ($this->nextState !== $this->lastState) {
             if (array_key_exists($this->nextState, $events)) {
-                $this->lastState = $this->nextState;
-                return $this->events[$this->nextState]($token, $this);
+                $text = $this->events[$this->nextState]($token, $this);
             }
         }
-        if ($this->nextState === 0) { //Rest
-            $this->lastState = 0;
-        }
-        return $token->text;
+        $this->lastState = $this->nextState;
+        $this->lastToken = $token;
+        return $text;
     }
 }

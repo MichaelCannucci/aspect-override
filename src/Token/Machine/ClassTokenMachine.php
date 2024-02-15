@@ -9,14 +9,12 @@ class ClassTokenMachine implements TokenMachineInterface {
     use ContainsTokenStateMachine;
 
     public const UNKNOWN = 0;
-    public const FUNCTION_KEYWORD = 1;
-    public const FUNCTION_NAME = 2;
-    public const ARGUMENT_START = 3;
-    public const ARGUMENT_PARAMETERS = 4;
-    public const ARGUMENT_END = 5;
-    public const FUNCTION_RETURN_TYPE = 6;
-    public const FUNCTION_START = 7;
-    public const FUNCTION_END = 8;
+    public const FUNCTION_NAME = 1;
+    public const ARGUMENT_PARAMETERS = 2;
+    public const ARGUMENT_END = 3;
+    public const FUNCTION_RETURN_TYPE = 4;
+    public const FUNCTION_START = 5;
+    public const FUNCTION_END = 6;
 
     /**
      * @var string
@@ -53,7 +51,7 @@ class ClassTokenMachine implements TokenMachineInterface {
         return $this->rawArguments;
     }
 
-    public function process(\PhpToken $token, ?\PhpToken $before = null): string {
+    public function process(\PhpToken $token): string {
         if ($token->isIgnorable()) {
             return $token->text;
         }
@@ -61,15 +59,15 @@ class ClassTokenMachine implements TokenMachineInterface {
         switch($this->lastState) {
             case self::UNKNOWN:
                 if ($token->is(T_FUNCTION)) {
-                    $this->nextState = self::FUNCTION_KEYWORD;
+                    $this->nextState = self::FUNCTION_NAME;
                 } else {
                     $this->stateBroken();
                 }
             break;
             case self::FUNCTION_START:
-                if ($token->getTokenName() === '{') {
+                if ($token->is('{')) {
                     $this->stack += 1;
-                } elseif ($token->getTokenName() === '}') {
+                } elseif ($token->is('}')) {
                     $this->stack -= 1;
                 }
                 if ($this->stack === 0) {
@@ -77,13 +75,12 @@ class ClassTokenMachine implements TokenMachineInterface {
                 }
             break;
             case self::FUNCTION_NAME:
-                if ($token->is("(")) {
-                    $this->nextState = self::ARGUMENT_START;
-                } else {
+                if ($token->is("(") && $this->lastToken->is(T_FUNCTION)) {
                     $this->stateBroken();
+                } else if ($token->is("(")) {
+                    $this->nextState = self::ARGUMENT_PARAMETERS;
                 }
             break;
-            case self::ARGUMENT_START:
             case self::ARGUMENT_PARAMETERS:
                 if ($token->is([T_STRING, T_VARIABLE, ',', '&'])) {
                     $this->rawArguments .= $token->text;
@@ -97,6 +94,9 @@ class ClassTokenMachine implements TokenMachineInterface {
             case self::ARGUMENT_END:
                 if ($token->is(':')) {
                     $this->nextState = self::FUNCTION_RETURN_TYPE;
+                } else if ($token->is('{')) {
+                    $this->nextState = self::FUNCTION_START;
+                    $this->stack += 1;
                 } else {
                     $this->stateBroken();
                 }
@@ -104,13 +104,12 @@ class ClassTokenMachine implements TokenMachineInterface {
             case self::FUNCTION_RETURN_TYPE:
                 if ($token->is(T_STRING)) {
                     $this->voidReturn = strtolower(trim($token->text)) === 'void';
+                } else if ($token->is('{')) {
                     $this->nextState = self::FUNCTION_START;
+                    $this->stack += 1;
                 } else {
                     $this->stateBroken();
                 }
-            break;
-            case self::FUNCTION_KEYWORD:
-                $this->nextState = self::FUNCTION_NAME;
             break;
             default:
                 $this->stateBroken();

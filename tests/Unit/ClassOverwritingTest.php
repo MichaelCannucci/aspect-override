@@ -129,6 +129,24 @@ it('can overwrite empty function', function () {
     )->toBe(3);
 });
 
+it('can overwrite function with reserved keyword as name', function () {
+    Override::method("TestReservedKeyword", "isset", function () {
+        return 3;
+    });
+    evaluate(
+        static function () {
+            class TestReservedKeyword {
+                public static function isset() {
+                }
+            }
+            return function() {
+                /** @noinspection PhpVoidFunctionResultUsedInspection */
+                return TestReservedKeyword::isset();
+            };
+        }
+    )->toBe(3);
+});
+
 it('can overwrite abstract function', function () {
     Override::method("AbstractClassImplementation", "returnTwo", function () {
         return 3;

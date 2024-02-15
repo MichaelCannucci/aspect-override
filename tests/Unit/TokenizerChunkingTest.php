@@ -21,7 +21,7 @@ it('can transform if split in the middle of the file', function ($substring) {
     foreach (explode("\r\n", chunk_split(CODE, $pos)) as $chunk) {
         $transformed .= $stream->transform($chunk);
     }
-    expect(CODE)->not()->toBe($transformed);
+    expect($transformed)->toContain("START", "END");
 })->with([
     'in the middle of function' => '<?php class Test { public func',
     'in the middle of function name' => '<?php class Test { public function te',

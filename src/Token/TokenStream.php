@@ -18,11 +18,6 @@ class TokenStream {
      */
     protected $last = '';
 
-    /**
-     * @var \PhpToken|null
-     */
-    protected $lastToken = null;
-
     public function __construct(
         TokenMachineInterface $machine,
         Tokenizer $tokenizer = null
@@ -36,8 +31,7 @@ class TokenStream {
         $buffer = [];
         $code = $this->last . $code;
         foreach ($this->tokenizer->tokens($code) as $index => $token) {
-            $buffer[$index] = $this->machine->process($token, $this->lastToken);
-            $this->lastToken = $token;
+            $buffer[$index] = $this->machine->process($token);
         }
         // Keep the last token in the buffer if it's not a valid end
         // and looks like it's in the middle (we'll append it in the next buffer)
@@ -54,7 +48,6 @@ class TokenStream {
 
     public function reset(): void {
         $this->last = '';
-        $this->lastToken = null;
         $this->machine->reset();
     }
 }
