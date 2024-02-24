@@ -17,7 +17,8 @@ it('can overwrite function return', function () {
                     return 2;
                 }
             }
-            return function() { return (new TestOverwriteFunctionReturn())->returnTwo(); };
+
+            return (new TestOverwriteFunctionReturn())->returnTwo();
         }
     )->toBe(3);
 });
@@ -33,7 +34,8 @@ it('can overwrite final function return', function () {
                     return 2;
                 }
             }
-            return function() { return (new TestFinalFunctionReturn())->returnTwo(); };
+
+            return (new TestFinalFunctionReturn())->returnTwo();
         }
     )->toBe(3);
 });
@@ -57,7 +59,8 @@ it('can mutate function return', function () {
                     return $this->a;
                 }
             }
-            return function() { return (new TestMutableObject())->getMutatableObject()->a; };
+
+            return (new TestMutableObject())->getMutatableObject()->a;
         }
     )->toBe(3);
 });
@@ -77,7 +80,8 @@ it('can return a different anonymous function', function () {
                     };
                 }
             }
-            return function() { return (new TestDifferentAnonymousFunction())->returnFunction()(); };
+
+            return (new TestDifferentAnonymousFunction())->returnFunction()();
         }
     )->toBe(3);
 });

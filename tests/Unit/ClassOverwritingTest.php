@@ -15,7 +15,8 @@ it('can overwrite public functions', function () {
                     return 2;
                 }
             }
-            return function() { return (new TestPublicFunctions())->returnTwo(); };
+
+            return (new TestPublicFunctions())->returnTwo();
         }
     )->toBe(3);
 });
@@ -34,7 +35,8 @@ it('can overwrite private functions', function () {
                     return $this->returnTwo();
                 }
             }
-            return function() { return (new TestPrivateFunctions())->callReturnTwo(); };
+
+            return (new TestPrivateFunctions())->callReturnTwo();
         }
     )->toBe(3);
 });
@@ -51,10 +53,10 @@ it('can overwrite void return functions', function () {
                 public function voidReturn(): void {
                 }
             }
-            return function() { (new TestVoidFunctionReturn())->voidReturn(); };
+
+            (new TestVoidFunctionReturn())->voidReturn();
         }
     );
-    /** @noinspection PhpConditionAlreadyCheckedInspection Override method is called */
     expect($called)->toBeTrue();
 });
 
@@ -72,7 +74,8 @@ it('can overwrite protected function', function () {
                     return $this->returnTwo();
                 }
             }
-            return function() { return (new TestOverwriteProtectedFunction())->callReturnTwo(); };
+
+            return (new TestOverwriteProtectedFunction())->callReturnTwo();
         }
     )->toBe(3);
 });
@@ -88,7 +91,8 @@ it('can overwrite static function', function () {
                     return 2;
                 }
             }
-            return function() { return TestOverwriteStaticFunction::returnTwo(); };
+
+            return TestOverwriteStaticFunction::returnTwo();
         }
     )->toBe(3);
 });
@@ -100,13 +104,11 @@ it('can overwrite function with no whitespace in body', function () {
     evaluate(
         static function () {
             class TestWhitespaceBody {
-                public static function noWhitespace() {
-                }
+                public static function noWhitespace(){}
             }
-            return function() {
-                /** @noinspection PhpVoidFunctionResultUsedInspection */
-                return TestWhitespaceBody::noWhitespace();
-            };
+
+            /** @noinspection PhpVoidFunctionResultUsedInspection */
+            return TestWhitespaceBody::noWhitespace();
         }
     )->toBe(3);
 });
@@ -121,10 +123,9 @@ it('can overwrite empty function', function () {
                 public static function empty() {
                 }
             }
-            return function() {
-                /** @noinspection PhpVoidFunctionResultUsedInspection */
-                return TestEmptyFunction::empty();
-            };
+
+            /** @noinspection PhpVoidFunctionResultUsedInspection */
+            return TestEmptyFunction::empty();
         }
     )->toBe(3);
 });
@@ -139,10 +140,10 @@ it('can overwrite function with reserved keyword as name', function () {
                 public static function isset() {
                 }
             }
-            return function() {
-                /** @noinspection PhpVoidFunctionResultUsedInspection */
-                return TestReservedKeyword::isset();
-            };
+
+
+            /** @noinspection PhpVoidFunctionResultUsedInspection */
+            return TestReservedKeyword::isset();
         }
     )->toBe(3);
 });
@@ -163,7 +164,7 @@ it('can overwrite abstract function', function () {
                 }
             }
             /** @noinspection PhpVoidFunctionResultUsedInspection */
-            return function() { return (new AbstractClassImplementation())->returnTwo(); };
+            return (new AbstractClassImplementation())->returnTwo();
         }
     )->toBe(3);
 });
@@ -179,8 +180,9 @@ it('can overwrite final function', function () {
                     return 2;
                 }
             }
+
             /** @noinspection PhpVoidFunctionResultUsedInspection */
-            return function() { return (new TestFinalFunction())->returnTwo(); };
+            return (new TestFinalFunction())->returnTwo();
         }
     )->toBe(3);
 });
@@ -193,8 +195,9 @@ it('can execute non overwritten functions', function () {
                     return 2;
                 }
             }
+
             /** @noinspection PhpVoidFunctionResultUsedInspection */
-            return function() { return (new TestNoOverwrites())->returnTwo(); };
+            return (new TestNoOverwrites())->returnTwo();
         }
     )->toBe(2);
 });

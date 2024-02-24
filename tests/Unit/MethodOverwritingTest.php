@@ -11,7 +11,7 @@ it("can overwrite method in declared namespace", function () {
         "<?php
         namespace test;
         
-        return function() { return time(); };
+        return time();
         "
     )->toBe(3);
 });
@@ -24,7 +24,7 @@ it("can overwrite method in scoped namespace", function () {
         /** @lang PHP */
         "<?php
         namespace test {
-            return function() { return time(); };
+            return time();
         }
         "
     )->toBe(3);
@@ -41,7 +41,8 @@ it("can overwrite method in multiple declared namespaces", function () {
         $a = time();
         namespace testing;
         $b = time();
-        return function() use ($a, $b) { return $a + $b; };
+
+        return $a + $b;
         '
     )->toBe(6);
 });
@@ -60,7 +61,7 @@ it("can overwrite method in multiple scoped namespaces", function () {
             $b = time();
         }
         namespace {
-            return function() use ($a, $b) { return $a + $b; };   
+            return $a + $b;   
         }
         '
     )->toBe(6);
@@ -74,7 +75,7 @@ it("can overwrite method in nested namespace", function () {
         /** @lang PHP */
         "<?php
         namespace test\in\a\path;
-        return function() { return time(); };
+        return time();
         "
     )->toBe(3);
 });
@@ -92,7 +93,8 @@ it("can overwrite reference variables of function", function () {
             foreach ($array as $item) {
                 $buffer .= $item;
             }
-            return function() use ($buffer) { return $buffer; };
+
+            return $buffer;
         }
     )->toBe("3123");
 });
@@ -104,8 +106,8 @@ it("can overwrite method in chained calls", function() {
         return $a + 3;
     });
     evaluate(
-        static function () {
-            return function() { return test_function(test_function(test_function(1))); };
+        static function() {
+            return test_function(test_function(test_function(1)));
         }
     )->toBe(10);
 });

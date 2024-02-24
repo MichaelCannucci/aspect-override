@@ -13,7 +13,8 @@ it('can overwrite function arguments', function () {
                     return $a;
                 }
             }
-            return function() { return (new TestFunctionArgs())->returnArg(2); };
+
+            return (new TestFunctionArgs())->returnArg(2);
         }
     )->toBe(3);
 });
@@ -29,7 +30,8 @@ it('can overwrite final function arguments', function () {
                     return $a;
                 }
             }
-            return function() { return (new TestFinalFunctionBefore())->returnArg(2); };
+
+            return (new TestFinalFunctionBefore())->returnArg(2);
         }
     )->toBe(3);
 });
@@ -45,7 +47,8 @@ it('can overwrite multiple function arguments', function () {
                     return $b;
                 }
             }
-            return function() { return (new TestOverwriteMultipleArgs())->returnSecondArg(2, 2, 2); };
+
+            return (new TestOverwriteMultipleArgs())->returnSecondArg(2, 2, 2);
         }
     )->toBe(3);
 });
@@ -61,11 +64,10 @@ it('respects pass by ref', function () {
                     $a = 2;
                 }
             }
-            return function() {
-                $a = 2;
-                (new TestRespectPassByRef())->doThingToRef($a);
-                return $a;
-            };
+
+            $a = 2;
+            (new TestRespectPassByRef())->doThingToRef($a);
+            return $a;
         }
     )->toBe(2);
 });
